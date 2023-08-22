@@ -1,6 +1,6 @@
 pub mod ktree {
-    use crate::mtree::kerman::kman::KernelInfo;
     use crate::mdb::modules::modinfo;
+    use crate::mtree::kerman::kman::KernelInfo;
     use std::collections::HashMap;
 
     pub struct KModuleTree<'kinfo> {
@@ -14,8 +14,10 @@ pub mod ktree {
 
         /// lsmod
         fn get_loaded_modules(&self) -> Vec<String> {
-            let mut deps: Vec<String> = vec![];
-            deps
+            modinfo::lsmod()
+                .iter()
+                .map(|modinfo| modinfo.name.to_owned())
+                .collect()
         }
 
         /// Snapshot currently active modules (lsmod)
@@ -25,6 +27,10 @@ pub mod ktree {
 
         /// Get all dependencies for the specified modules
         pub fn get_specified(&self, modules: &[String]) -> HashMap<String, Vec<String>> {
+            if modules.len() == 0 {
+                return self.kernel.get_deps_for(&self.get_loaded_modules());
+            }
+
             self.kernel.get_deps_for(modules)
         }
 
