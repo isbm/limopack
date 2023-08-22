@@ -9,6 +9,13 @@ use std::env;
 fn cli() -> Command<'static> {
     Command::new("linmodpak - Linux Module Package helper")
         .arg(
+            Arg::new("use")
+                .short('u')
+                .long("use")
+                .help("Comma-separated list of kernel modules to be used")
+                .value_delimiter(',')
+        )
+        .arg(
             Arg::new("tree")
                 .short('e')
                 .long("tree")
@@ -41,19 +48,22 @@ fn main() {
 
     let params = cli().get_matches();
     let debug: bool = params.get_flag("debug");
+    let mut modules: Vec<String> = vec![];
+
+    let modlist = params.get_one::<String>("use");
+    if !modlist.is_none() {
+        modules = params.get_many::<String>("use").unwrap().collect::<Vec<_>>().iter().map(|x| x.to_string()).collect();
+    }
 
     if params.get_flag("tree") {
-        if debug {
-            println!("Getting kernel modules");
-        }
-
-        let modules = vec![
-            "sunrpc".to_owned(),
-            "9pnet_xen".to_owned(),
-            "bluetooth/hci_nokia.ko".to_owned(),
-            "ltc3815.ko".to_owned(),
-            "snd-soc-skl-ssp-clk".to_owned(),
-        ];
+        /*
+        Module examples:
+            sunrpc
+            9pnet_xen
+            bluetooth/hci_nokia.ko
+            ltc3815.ko
+            snd-soc-skl-ssp-clk
+        */
 
         for ki in get_kernel_infos(&debug) {
             let kmtree = KModuleTree::new(ki);
