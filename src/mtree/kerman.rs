@@ -15,10 +15,10 @@ pub mod kman {
         deplist: HashMap<String, Vec<String>>,
         is_valid: bool,
         _loaded: bool,
-        debug: &'kinfo bool
+        debug: &'kinfo bool,
     }
 
-    impl <'kinfo> KernelInfo<'kinfo> {
+    impl<'kinfo> KernelInfo<'kinfo> {
         /// Creates an instance of a KernelInfo struct with the version
         /// of the kernel and paths to required points for module analysis
         pub fn new(kver: &str, debug: &'kinfo bool) -> Self {
@@ -29,7 +29,7 @@ pub mod kman {
                 deplist: HashMap::default(),
                 _loaded: false,
                 is_valid: false,
-                debug: debug
+                debug,
             }
             .init()
         }
