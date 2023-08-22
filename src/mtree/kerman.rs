@@ -1,5 +1,5 @@
 pub mod kman {
-    use std::collections::HashMap;
+    use std::collections::{HashMap, HashSet};
     use std::fs::{read_dir, read_to_string};
     use std::path::{Path, PathBuf};
 
@@ -7,6 +7,7 @@ pub mod kman {
     static MOD_DEP_F: &str = "modules.dep";
 
     /// Metadata about the kernel and details about it
+    #[derive(Debug)]
     pub struct KernelInfo<'kinfo> {
         version: String,
         path: PathBuf,
@@ -14,10 +15,10 @@ pub mod kman {
         deplist: HashMap<String, Vec<String>>,
         is_valid: bool,
         _loaded: bool,
-        debug: &'kinfo bool
+        debug: &'kinfo bool,
     }
 
-    impl <'kinfo> KernelInfo<'kinfo> {
+    impl<'kinfo> KernelInfo<'kinfo> {
         /// Creates an instance of a KernelInfo struct with the version
         /// of the kernel and paths to required points for module analysis
         pub fn new(kver: &str, debug: &'kinfo bool) -> Self {
@@ -28,7 +29,7 @@ pub mod kman {
                 deplist: HashMap::default(),
                 _loaded: false,
                 is_valid: false,
-                debug: debug
+                debug,
             }
             .init()
         }
@@ -43,8 +44,7 @@ pub mod kman {
             self.dep_path = self
                 .dep_path
                 .join(self.path.as_os_str().to_owned())
-                .join(MOD_DEP_F)
-                .into();
+                .join(MOD_DEP_F);
             self.load_deps();
             self._loaded = true;
 
@@ -99,19 +99,71 @@ pub mod kman {
             self.dep_path.to_str().unwrap()
         }
 
+        /// Find a full path to a module
+        /// Example: "sunrpc.ko" will be resolved as "kernel/net/sunrpc/sunrpc.ko"
+        fn expand_module_name<'a>(&'a self, name: &'a String) -> &String {
+            let mut m_name: String;
+            if !name.ends_with(".ko") {
+                m_name = format!("{}.ko", name); // "sunrpc" -> "sunrpc.ko"
+            } else {
+                m_name = name.to_owned();
+            }
+
+            if !m_name.starts_with("kernel/") {
+                // name or partial path
+                if !m_name.contains('/') {
+                    m_name = format!("/{}", m_name); // "sunrpc.ko" -> "/sunrpc.ko"
+                }
+
+                for (fmodname, _) in &self.deplist {
+                    if fmodname.ends_with(&m_name) {
+                        return fmodname;
+                    }
+                }
+            }
+
+            name
+        }
+
         /// Resolve dependencies for one module
         /// This is an internal method
-        fn get_mod_dep(&self, name: String) -> Vec<String> {
-            let mut mod_deps: Vec<String> = vec![];
+        fn get_mod_dep(&self, name: &String, mods: &mut HashSet<String>) {
+            let mdeps = self.deplist.get(name).unwrap();
+            for mdep in mdeps {
+                mods.insert(mdep.to_owned());
 
-            mod_deps
+                // If a dependency has its own dependencies
+                let d_mdeps = self.deplist.get(mdep).unwrap();
+                if d_mdeps.len() > 0 {
+                    for d_dep in d_mdeps {
+                        mods.insert(d_dep.to_owned());
+                        self.get_mod_dep(d_dep, mods);
+                    }
+                }
+            }
         }
 
         /// Resolve all module dependencies
-        pub fn get_deps_for(&self, names: &mut [String]) -> Vec<String> {
-            let mut mod_deps: Vec<String> = vec![];
+        pub fn get_deps_for(&self, names: &[String]) -> HashMap<String, Vec<String>> {
+            let mut mod_tree: HashMap<String, Vec<String>> = HashMap::new();
+            for kmodname in names {
+                let r_kmodname = self.expand_module_name(kmodname);
+                if !r_kmodname.contains('/') {
+                    continue;
+                }
 
-            mod_deps
+                let mut mod_deps: HashSet<String> = HashSet::default();
+                let mut r_deps: Vec<String> = vec![];
+
+                self.get_mod_dep(r_kmodname, &mut mod_deps);
+
+                for v in mod_deps {
+                    r_deps.push(v);
+                }
+                mod_tree.insert(r_kmodname.to_owned(), r_deps);
+            }
+
+            mod_tree
         }
     }
 
@@ -121,8 +173,10 @@ pub mod kman {
         for fres in read_dir(MOD_D).unwrap() {
             let fd = fres.unwrap();
             if fd.file_type().unwrap().is_dir() {
-                let kinfo: KernelInfo<'_> =
-                    KernelInfo::new(&fd.path().file_name().unwrap().to_str().unwrap().to_owned(), debug);
+                let kinfo: KernelInfo<'_> = KernelInfo::new(
+                    &fd.path().file_name().unwrap().to_str().unwrap().to_owned(),
+                    debug,
+                );
                 if kinfo.is_valid() {
                     kernels.push(kinfo);
                 }

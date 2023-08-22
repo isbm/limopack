@@ -29,6 +29,7 @@ fn cli() -> Command<'static> {
         )
 }
 
+#[allow(clippy::needless_collect)]
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
@@ -44,8 +45,23 @@ fn main() {
             println!("Getting kernel modules");
         }
 
+        let modules = vec![
+            "sunrpc".to_owned(),
+            "9pnet_xen".to_owned(),
+            "bluetooth/hci_nokia.ko".to_owned(),
+            "ltc3815.ko".to_owned(),
+            "snd-soc-skl-ssp-clk".to_owned(),
+        ];
+
         for k in get_kernel_infos(&debug).iter() {
-            println!(">>> {}", k.get_dep_path());
+            println!("Examining {}", k.get_dep_path());
+            let t = k.get_deps_for(&modules);
+            for (m, d) in t {
+                println!("{m}");
+                for dm in d {
+                    println!("  \\__{dm}");
+                }
+            }
         }
     }
 }
