@@ -44,8 +44,7 @@ pub mod kman {
             self.dep_path = self
                 .dep_path
                 .join(self.path.as_os_str().to_owned())
-                .join(MOD_DEP_F)
-                .into();
+                .join(MOD_DEP_F);
             self.load_deps();
             self._loaded = true;
 
