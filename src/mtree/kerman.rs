@@ -95,6 +95,7 @@ pub mod kman {
         }
 
         /// Get path of dependencies file
+        #[allow(dead_code)]
         pub fn get_dep_path(&self) -> &str {
             self.dep_path.to_str().unwrap()
         }
