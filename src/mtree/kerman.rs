@@ -147,8 +147,10 @@ pub mod kman {
         for fres in read_dir(MOD_D).unwrap() {
             let fd = fres.unwrap();
             if fd.file_type().unwrap().is_dir() {
-                let kinfo: KernelInfo<'_> =
-                    KernelInfo::new(&fd.path().file_name().unwrap().to_str().unwrap().to_owned(), debug);
+                let kinfo: KernelInfo<'_> = KernelInfo::new(
+                    &fd.path().file_name().unwrap().to_str().unwrap().to_owned(),
+                    debug,
+                );
                 if kinfo.is_valid() {
                     kernels.push(kinfo);
                 }
