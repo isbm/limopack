@@ -3,6 +3,7 @@ mod mdb;
 
 use clap::{Arg, ArgAction, Command};
 use mtree::kerman::kman::get_kernel_infos;
+use mtree::moddeps::ktree::KModuleTree;
 use std::env;
 
 fn cli() -> Command<'static> {
@@ -54,14 +55,18 @@ fn main() {
             "snd-soc-skl-ssp-clk".to_owned(),
         ];
 
-        for k in get_kernel_infos(&debug).iter() {
-            println!("Examining {}", k.get_dep_path());
-            let t = k.get_deps_for(&modules);
-            for (m, d) in t {
+        for ki in get_kernel_infos(&debug) {
+            let kmtree = KModuleTree::new(ki);
+            for (m, d) in kmtree.get_specified(&modules) {
                 println!("{m}");
                 for dm in d {
                     println!("  \\__{dm}");
                 }
+            }
+
+            println!("\n---\n");
+            for m in kmtree.merge_specified(&modules) {
+                println!("{m}");
             }
         }
     }
