@@ -1,5 +1,5 @@
 pub mod kman {
-    use std::collections::HashMap;
+    use std::collections::{HashMap, HashSet};
     use std::fs::{read_dir, read_to_string};
     use std::path::{Path, PathBuf};
 
@@ -127,17 +127,43 @@ pub mod kman {
 
         /// Resolve dependencies for one module
         /// This is an internal method
-        fn get_mod_dep(&self, name: String) -> Vec<String> {
-            let mut mod_deps: Vec<String> = vec![];
+        fn get_mod_dep(&self, name: &String, mods: &mut HashSet<String>) {
+            let mdeps = self.deplist.get(name).unwrap();
+            for mdep in mdeps {
+                mods.insert(mdep.to_owned());
 
-            mod_deps
+                // If a dependency has its own dependencies
+                let d_mdeps = self.deplist.get(mdep).unwrap();
+                if d_mdeps.len() > 0 {
+                    for d_dep in d_mdeps {
+                        mods.insert(d_dep.to_owned());
+                        self.get_mod_dep(d_dep, mods);
+                    }
+                }
+            }
         }
 
         /// Resolve all module dependencies
-        pub fn get_deps_for(&self, names: &mut [String]) -> Vec<String> {
-            let mut mod_deps: Vec<String> = vec![];
+        pub fn get_deps_for(&self, names: &[String]) -> HashMap<String, Vec<String>> {
+            let mut mod_tree: HashMap<String, Vec<String>> = HashMap::new();
+            for kmodname in names {
+                let r_kmodname = self.expand_module_name(kmodname);
+                if !r_kmodname.contains('/') {
+                    continue;
+                }
 
-            mod_deps
+                let mut mod_deps: HashSet<String> = HashSet::default();
+                let mut r_deps: Vec<String> = vec![];
+
+                self.get_mod_dep(r_kmodname, &mut mod_deps);
+
+                for v in mod_deps {
+                    r_deps.push(v);
+                }
+                mod_tree.insert(r_kmodname.to_owned(), r_deps);
+            }
+
+            mod_tree
         }
     }
 
