@@ -91,7 +91,7 @@ pub mod kman {
         /// Returns true if there are actual modules on the media for this kernel.
         /// There are often kernel paths left after a kernel was not completely purged.
         fn is_valid(&self) -> bool {
-            return self.is_valid;
+            self.is_valid
         }
 
         /// Get path of dependencies file
