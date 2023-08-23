@@ -40,10 +40,10 @@ pub mod kman {
                 return self;
             }
 
-            self.path = self.path.join(self.version.to_owned());
+            self.path = self.path.join(&self.version);
             self.dep_path = self
                 .dep_path
-                .join(self.path.as_os_str().to_owned())
+                .join(self.path.as_os_str())
                 .join(MOD_DEP_F);
             self.load_deps();
             self._loaded = true;
@@ -59,11 +59,11 @@ pub mod kman {
             }
 
             let modpath = PathBuf::from(MOD_D)
-                .join(self.version.to_owned())
+                .join(&self.version)
                 .join("kernel");
             self.is_valid = Path::new(modpath.to_str().unwrap()).is_dir();
             if self.is_valid {
-                for line in read_to_string(self.dep_path.as_os_str().to_owned())
+                for line in read_to_string(self.dep_path.as_os_str())
                     .unwrap()
                     .lines()
                 {
