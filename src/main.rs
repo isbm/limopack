@@ -1,83 +1,48 @@
-mod mtree;
 mod mdb;
+mod mtree;
+mod clidef;
+mod actions;
 
-use clap::{Arg, ArgAction, Command};
-use mtree::kerman::kman::get_kernel_infos;
-use mtree::moddeps::ktree::KModuleTree;
+use clap::Error;
 use std::env;
 
-fn cli() -> Command<'static> {
-    Command::new("linmodpak - Linux Module Package helper")
-        .arg(
-            Arg::new("use")
-                .short('u')
-                .long("use")
-                .help("Comma-separated list of kernel modules to be used")
-                .value_delimiter(',')
-        )
-        .arg(
-            Arg::new("tree")
-                .short('e')
-                .long("tree")
-                .help("Display module dependency tree")
-                .action(ArgAction::SetTrue),
-        )
-        .arg(
-            Arg::new("debug")
-                .short('d')
-                .long("debug")
-                .help("Set to debug mode")
-                .action(ArgAction::SetTrue),
-        )
-        .arg(
-            Arg::new("version")
-                .short('v')
-                .long("version")
-                .help("Get current version")
-                .action(ArgAction::SetTrue),
-        )
-}
+static VERSION: &str = "0.1";
 
 #[allow(clippy::needless_collect)]
-fn main() {
+fn main() -> Result<(), Error> {
     let args: Vec<String> = env::args().collect();
+    let mut cli: clap::App<'_> = clidef::cli(VERSION);
+
     if args.len() == 1 {
-        let _ = cli().print_help();
-        return;
+        return Ok(cli.print_help().unwrap());
     }
 
-    let params = cli().get_matches();
+    let params = cli.to_owned().get_matches();
     let debug: bool = params.get_flag("debug");
-    let mut modules: Vec<String> = vec![];
+    let modules: Vec<String>;
 
     let modlist = params.get_one::<String>("use");
     if !modlist.is_none() {
-        modules = params.get_many::<String>("use").unwrap().collect::<Vec<_>>().iter().map(|x| x.to_string()).collect();
+        modules = params
+            .get_many::<String>("use")
+            .unwrap()
+            .collect::<Vec<_>>()
+            .iter()
+            .map(|x| x.to_string())
+            .collect();
+    } else {
+        modules = vec![];
     }
 
-    if params.get_flag("tree") {
-        /*
-        Module examples:
-            sunrpc
-            9pnet_xen
-            bluetooth/hci_nokia.ko
-            ltc3815.ko
-            snd-soc-skl-ssp-clk
-        */
-
-        for ki in get_kernel_infos(&debug) {
-            let kmtree = KModuleTree::new(ki);
-            for (m, d) in kmtree.get_specified(&modules) {
-                println!("{m}");
-                for dm in d {
-                    println!("  \\__{dm}");
-                }
-            }
-
-            println!("\n---\n");
-            for m in kmtree.merge_specified(&modules) {
-                println!("{m}");
-            }
-        }
+    if params.get_flag("version") {
+        println!("Version: {}", VERSION);
+    } else if params.get_flag("tree") {
+        actions::do_tree(&debug, &modules);
+    } else if params.get_flag("list") {
+        actions::do_list(&debug, &modules);
+    } else {
+        cli.print_help().unwrap();
     }
+
+    Ok(())
 }
