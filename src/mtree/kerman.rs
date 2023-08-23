@@ -175,7 +175,7 @@ pub mod kman {
             let fd = fres.unwrap();
             if fd.file_type().unwrap().is_dir() {
                 let kinfo: KernelInfo<'_> = KernelInfo::new(
-                    &fd.path().file_name().unwrap().to_str().unwrap().to_owned(),
+                    fd.path().file_name().unwrap().to_str().unwrap(),
                     debug,
                 );
                 if kinfo.is_valid() {

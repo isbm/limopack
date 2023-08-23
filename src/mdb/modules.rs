@@ -44,7 +44,7 @@ pub mod modinfo {
                 } else {
                     mod_data[3].strip_suffix(',').unwrap().split(',').map(str::to_string).collect()
                 },
-                mem_offset: usize::from_str_radix(&mod_data[5].strip_prefix("0x").unwrap(), 0x10).unwrap(),
+                mem_offset: usize::from_str_radix(mod_data[5].strip_prefix("0x").unwrap(), 0x10).unwrap(),
             });
         }
 
