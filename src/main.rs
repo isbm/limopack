@@ -1,12 +1,26 @@
+mod actions;
+mod clidef;
+mod logger;
 mod mdb;
 mod mtree;
-mod clidef;
-mod actions;
 
 use clap::Error;
+use log;
 use std::env;
 
 static VERSION: &str = "0.1";
+static LOGGER: logger::STDOUTLogger = logger::STDOUTLogger;
+
+/// Initialise logger etc
+pub fn init(debug: &bool) -> Result<(), log::SetLoggerError> {
+    log::set_logger(&LOGGER).map(|()| {
+        log::set_max_level(if *debug {
+            log::LevelFilter::Trace
+        } else {
+            log::LevelFilter::Info
+        })
+    })
+}
 
 #[allow(clippy::needless_collect)]
 fn main() -> Result<(), Error> {
@@ -19,6 +33,8 @@ fn main() -> Result<(), Error> {
 
     let params = cli.to_owned().get_matches();
     let debug: bool = params.get_flag("debug");
+    init(&debug).unwrap();
+
     let modules: Vec<String>;
 
     let modlist = params.get_one::<String>("use");
