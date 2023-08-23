@@ -67,7 +67,7 @@ pub mod kman {
                     .unwrap()
                     .lines()
                 {
-                    if let Some(sl) = line.split_once(":") {
+                    if let Some(sl) = line.split_once(':') {
                         let (modpath, moddeps) = (sl.0.trim(), sl.1.trim());
                         let mut deplist: Vec<String> = vec![];
 

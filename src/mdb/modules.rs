@@ -28,7 +28,7 @@ pub mod modinfo {
                 process::exit(1);
             }
 
-            let mod_data: Vec<String> = rfe.unwrap().split(" ").map(str::to_string).collect();
+            let mod_data: Vec<String> = rfe.unwrap().split(' ').map(str::to_string).collect();
 
             if mod_data.len() != 6 {
                 log::error!("Unsupported format - {:?}", mod_data);
