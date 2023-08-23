@@ -1,6 +1,6 @@
-# Linmodpak
+# Limopack
 
-**Lin**ux **mod**ule **pack**age helper is a package helper to remove
+**Li**nux **mo**dule **pack**age (helper) is a package helper to remove
 unnecessary kernel modules on embedded or minimalistic setup, where
 there is no expectations to put an existing disk into a different
 hardware and expect it to boot.
