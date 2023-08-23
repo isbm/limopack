@@ -21,6 +21,7 @@ pub mod ktree {
         }
 
         /// Snapshot currently active modules (lsmod)
+        #[allow(dead_code)]
         pub fn get_loaded(&self) -> HashMap<String, Vec<String>> {
             self.get_specified(&self.get_loaded_modules())
         }
@@ -36,6 +37,7 @@ pub mod ktree {
 
         /// Same as a snapshot `get_loaded()` except it is merges
         /// all the dependencies into one list for an actual operations.
+        #[allow(dead_code)]
         pub fn merge_loaded(&self) -> Vec<String> {
             self.merge_specified(&self.get_loaded_modules())
         }
