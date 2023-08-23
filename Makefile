@@ -1,11 +1,11 @@
 .DEFAULT_GOAL := build
 
 .PHONY:build
-build: man
+release: man
 	cargo build -v --release
 
-build-dev:
+build:
 	cargo build
 
 man:
-	pandoc --standalone --to man doc/limopak.8.md -o doc/limopak.8
+	pandoc --standalone --to man doc/limopack.8.md -o doc/limopack.8
