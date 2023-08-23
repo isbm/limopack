@@ -116,7 +116,7 @@ pub mod kman {
                     m_name = format!("/{}", m_name); // "sunrpc.ko" -> "/sunrpc.ko"
                 }
 
-                for (fmodname, _) in &self.deplist {
+                for fmodname in self.deplist.keys() {
                     if fmodname.ends_with(&m_name) {
                         return fmodname;
                     }
