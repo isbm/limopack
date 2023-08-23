@@ -1,5 +1,6 @@
 use colored::{self, Colorize};
 use log::{Level, Metadata, Record};
+use chrono::Local;
 
 pub(crate) struct STDOUTLogger;
 
@@ -19,7 +20,7 @@ impl log::Log for STDOUTLogger {
                 log::Level::Trace => s_level = format!("{}", msg.level().as_str().cyan()),
             }
 
-            println!("{}: {}", s_level, msg.args());
+            println!("[{}] - {}: {}", Local::now().format("%d/%m/%Y %H:%M:%S"), s_level, msg.args());
         }
     }
 
