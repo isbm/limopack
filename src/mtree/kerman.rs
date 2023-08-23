@@ -40,10 +40,10 @@ pub mod kman {
                 return self;
             }
 
-            self.path = self.path.join(self.version.to_owned());
+            self.path = self.path.join(&self.version);
             self.dep_path = self
                 .dep_path
-                .join(self.path.as_os_str().to_owned())
+                .join(self.path.as_os_str())
                 .join(MOD_DEP_F);
             self.load_deps();
             self._loaded = true;
@@ -59,19 +59,19 @@ pub mod kman {
             }
 
             let modpath = PathBuf::from(MOD_D)
-                .join(self.version.to_owned())
+                .join(&self.version)
                 .join("kernel");
             self.is_valid = Path::new(modpath.to_str().unwrap()).is_dir();
             if self.is_valid {
-                for line in read_to_string(self.dep_path.as_os_str().to_owned())
+                for line in read_to_string(self.dep_path.as_os_str())
                     .unwrap()
                     .lines()
                 {
-                    if let Some(sl) = line.split_once(":") {
+                    if let Some(sl) = line.split_once(':') {
                         let (modpath, moddeps) = (sl.0.trim(), sl.1.trim());
                         let mut deplist: Vec<String> = vec![];
 
-                        if moddeps != "" {
+                        if !moddeps.is_empty() {
                             deplist = moddeps
                                 .split(' ')
                                 .into_iter()
@@ -91,7 +91,7 @@ pub mod kman {
         /// Returns true if there are actual modules on the media for this kernel.
         /// There are often kernel paths left after a kernel was not completely purged.
         fn is_valid(&self) -> bool {
-            return self.is_valid;
+            self.is_valid
         }
 
         /// Get path of dependencies file
@@ -116,7 +116,7 @@ pub mod kman {
                     m_name = format!("/{}", m_name); // "sunrpc.ko" -> "/sunrpc.ko"
                 }
 
-                for (fmodname, _) in &self.deplist {
+                for fmodname in self.deplist.keys() {
                     if fmodname.ends_with(&m_name) {
                         return fmodname;
                     }
@@ -135,7 +135,7 @@ pub mod kman {
 
                 // If a dependency has its own dependencies
                 let d_mdeps = self.deplist.get(mdep).unwrap();
-                if d_mdeps.len() > 0 {
+                if !d_mdeps.is_empty() {
                     for d_dep in d_mdeps {
                         mods.insert(d_dep.to_owned());
                         self.get_mod_dep(d_dep, mods);
@@ -175,7 +175,7 @@ pub mod kman {
             let fd = fres.unwrap();
             if fd.file_type().unwrap().is_dir() {
                 let kinfo: KernelInfo<'_> = KernelInfo::new(
-                    &fd.path().file_name().unwrap().to_str().unwrap().to_owned(),
+                    fd.path().file_name().unwrap().to_str().unwrap(),
                     debug,
                 );
                 if kinfo.is_valid() {

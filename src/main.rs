@@ -5,7 +5,6 @@ mod mdb;
 mod mtree;
 
 use clap::Error;
-use log;
 use std::env;
 
 static VERSION: &str = "0.1";
@@ -28,27 +27,29 @@ fn main() -> Result<(), Error> {
     let mut cli = clidef::cli(VERSION);
 
     if args.len() == 1 {
-        return Ok(cli.print_help().unwrap());
+        return {
+            cli.print_help().unwrap();
+            Ok(())
+        }
     }
 
     let params = cli.to_owned().get_matches();
     let debug: bool = params.get_flag("debug");
+
     init(&debug).unwrap();
 
-    let modules: Vec<String>;
-
     let modlist = params.get_one::<String>("use");
-    if !modlist.is_none() {
-        modules = params
+    let modules: Vec<String> = if modlist.is_some() {
+        params
             .get_many::<String>("use")
             .unwrap()
             .collect::<Vec<_>>()
             .iter()
             .map(|x| x.to_string())
-            .collect();
+            .collect()
     } else {
-        modules = vec![];
-    }
+        vec![]
+    };
 
     if params.get_flag("version") {
         println!("Version: {}", VERSION);

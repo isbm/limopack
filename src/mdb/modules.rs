@@ -28,7 +28,7 @@ pub mod modinfo {
                 process::exit(1);
             }
 
-            let mod_data: Vec<String> = rfe.unwrap().split(" ").map(str::to_string).collect();
+            let mod_data: Vec<String> = rfe.unwrap().split(' ').map(str::to_string).collect();
 
             if mod_data.len() != 6 {
                 log::error!("Unsupported format - {:?}", mod_data);
@@ -44,7 +44,7 @@ pub mod modinfo {
                 } else {
                     mod_data[3].strip_suffix(',').unwrap().split(',').map(str::to_string).collect()
                 },
-                mem_offset: usize::from_str_radix(&mod_data[5].strip_prefix("0x").unwrap(), 0x10).unwrap(),
+                mem_offset: usize::from_str_radix(mod_data[5].strip_prefix("0x").unwrap(), 0x10).unwrap(),
             });
         }
 

@@ -9,11 +9,11 @@ use crate::mtree::moddeps::ktree::KModuleTree;
 ///    bluetooth/hci_nokia.ko
 ///    ltc3815.ko
 ///    snd-soc-skl-ssp-clk
-pub fn do_tree(debug: &bool, modules: &Vec<String>) {
-    for ki in get_kernel_infos(&debug) {
+pub fn do_tree(debug: &bool, modules: &[String]) {
+    for ki in get_kernel_infos(debug) {
         log::info!("Displaying module dependencies as a tree per a module");
         let kmtree = KModuleTree::new(ki);
-        for (m, d) in kmtree.get_specified(&modules) {
+        for (m, d) in kmtree.get_specified(modules) {
             println!("{m}");
             for dm in d {
                 println!("  \\__{dm}");
@@ -24,10 +24,10 @@ pub fn do_tree(debug: &bool, modules: &Vec<String>) {
 
 /// List dependencies from all specified modules
 /// in a flat sorted format
-pub fn do_list(debug: &bool, modules: &Vec<String>) {
-    for ki in get_kernel_infos(&debug) {
+pub fn do_list(debug: &bool, modules: &[String]) {
+    for ki in get_kernel_infos(debug) {
         let kmtree = KModuleTree::new(ki);
-        for m in kmtree.merge_specified(&modules) {
+        for m in kmtree.merge_specified(modules) {
             println!("{m}");
         }
     }

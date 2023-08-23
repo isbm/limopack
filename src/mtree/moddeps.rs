@@ -28,8 +28,9 @@ pub mod ktree {
 
         /// Get all dependencies for the specified modules
         pub fn get_specified(&self, modules: &[String]) -> HashMap<String, Vec<String>> {
-            if modules.len() == 0 {
-                return self.kernel.get_deps_for(&self.get_loaded_modules());
+            match modules.is_empty() {
+                true => return self.kernel.get_deps_for(&self.get_loaded_modules()),
+                false => (),
             }
 
             self.kernel.get_deps_for(modules)
