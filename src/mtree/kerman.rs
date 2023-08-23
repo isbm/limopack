@@ -78,7 +78,7 @@ pub mod kman {
                                 .map(|x| x.to_owned())
                                 .collect();
                             if *self.debug {
-                                println!("Found {} dependencies for {}", deplist.len(), modpath);
+                                log::debug!("Found {} dependencies for {}", deplist.len(), modpath);
                             }
                         }
 
