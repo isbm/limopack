@@ -12,13 +12,17 @@ pub fn cli(version: &'static str) -> Command {
     Command::new("limopack")
         .version(version)
         .about("[Li]nux [Mo]dule [Pack]age Helper")
+
+        // Config
         .arg(
             Arg::new("use")
                 .short('u')
                 .long("use")
-                .help("Specifycomma-separated list of kernel modules to be used.")
+                .help("Specifycomma-separated list of kernel modules to be used.\n")
                 .value_delimiter(',')
         )
+
+        // Display
         .arg(
             Arg::new("tree")
                 .short('e')
@@ -31,8 +35,12 @@ pub fn cli(version: &'static str) -> Command {
                 .short('l')
                 .long("list")
                 .help("Display in a sorted flat list format all modules that will
-  be used. This includes all dependencies and already marked and existing modules.")
+  be used. This includes all dependencies and already marked
+  and existing modules.\n")
+                .action(ArgAction::SetTrue)
         )
+
+        // Writable
         .arg(
             Arg::new("install")
                 .short('i')
@@ -54,9 +62,12 @@ pub fn cli(version: &'static str) -> Command {
                 .short('a')
                 .long("apply")
                 .help("Apply the changes, vacuuming all unneded/unregisterd (non-marked)
-  kernel modules, those are still exist on a disk, but always unused.")
+  kernel modules, those are still exist on a disk, but
+  always unused.\n")
                 .action(ArgAction::SetTrue)
         )
+
+        // Other
         .arg(
             Arg::new("debug")
                 .short('d')
