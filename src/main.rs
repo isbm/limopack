@@ -5,7 +5,6 @@ mod mdb;
 mod mtree;
 
 use clap::Error;
-use log;
 use std::env;
 
 static VERSION: &str = "0.1";
