@@ -9,6 +9,7 @@ authors = ["Bo Maryniuk <bo@maryniuk.net>"]
 [dependencies]
 clap = { version = "4.3.24", features = ["derive", "color", "unstable-styles"] }
 clap_complete = "4.3.2"
+colored = "2.0.4"
 log = "0.4.20"
 
 
