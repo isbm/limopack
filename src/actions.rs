@@ -11,6 +11,7 @@ use crate::mtree::moddeps::ktree::KModuleTree;
 ///    snd-soc-skl-ssp-clk
 pub fn do_tree(debug: &bool, modules: &Vec<String>) {
     for ki in get_kernel_infos(&debug) {
+        log::info!("Displaying module dependencies as a tree per a module");
         let kmtree = KModuleTree::new(ki);
         for (m, d) in kmtree.get_specified(&modules) {
             println!("{m}");
