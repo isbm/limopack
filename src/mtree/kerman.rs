@@ -71,7 +71,7 @@ pub mod kman {
                         let (modpath, moddeps) = (sl.0.trim(), sl.1.trim());
                         let mut deplist: Vec<String> = vec![];
 
-                        if moddeps != "" {
+                        if !moddeps.is_empty() {
                             deplist = moddeps
                                 .split(' ')
                                 .into_iter()
@@ -135,7 +135,7 @@ pub mod kman {
 
                 // If a dependency has its own dependencies
                 let d_mdeps = self.deplist.get(mdep).unwrap();
-                if d_mdeps.len() > 0 {
+                if !d_mdeps.is_empty() {
                     for d_dep in d_mdeps {
                         mods.insert(d_dep.to_owned());
                         self.get_mod_dep(d_dep, mods);
