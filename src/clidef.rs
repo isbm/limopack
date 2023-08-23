@@ -1,6 +1,14 @@
+use clap::builder::styling;
 use clap::{Arg, ArgAction, Command};
 
-pub fn cli(version: &'static str) -> Command<'static> {
+/// Define CLI arguments and styling
+pub fn cli(version: &'static str) -> Command {
+    let styles = styling::Styles::styled()
+        .header(styling::AnsiColor::White.on_default() | styling::Effects::BOLD)
+        .usage(styling::AnsiColor::White.on_default() | styling::Effects::BOLD)
+        .literal(styling::AnsiColor::BrightCyan.on_default())
+        .placeholder(styling::AnsiColor::Cyan.on_default());
+
     Command::new("limopack")
         .version(version)
         .about("[Li]nux [Mo]dule [Pack]age Helper")
@@ -63,5 +71,8 @@ pub fn cli(version: &'static str) -> Command<'static> {
                 .help("Get current version.")
                 .action(ArgAction::SetTrue),
         )
+        .disable_version_flag(true)
+        .disable_colored_help(false)
+        .styles(styles)
         .after_help("NOTE: This program is designed to be mainly used with software packaging utilities and helpers.")
 }

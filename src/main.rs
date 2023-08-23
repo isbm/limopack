@@ -11,7 +11,7 @@ static VERSION: &str = "0.1";
 #[allow(clippy::needless_collect)]
 fn main() -> Result<(), Error> {
     let args: Vec<String> = env::args().collect();
-    let mut cli: clap::App<'_> = clidef::cli(VERSION);
+    let mut cli = clidef::cli(VERSION);
 
     if args.len() == 1 {
         return Ok(cli.print_help().unwrap());
