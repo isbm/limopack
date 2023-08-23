@@ -27,7 +27,10 @@ fn main() -> Result<(), Error> {
     let mut cli = clidef::cli(VERSION);
 
     if args.len() == 1 {
-        return Ok(cli.print_help().unwrap());
+        return {
+            cli.print_help().unwrap();
+            Ok(())
+        }
     }
 
     let params = cli.to_owned().get_matches();
