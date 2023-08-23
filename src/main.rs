@@ -35,22 +35,21 @@ fn main() -> Result<(), Error> {
 
     let params = cli.to_owned().get_matches();
     let debug: bool = params.get_flag("debug");
+
     init(&debug).unwrap();
 
-    let modules: Vec<String>;
-
     let modlist = params.get_one::<String>("use");
-    if !modlist.is_none() {
-        modules = params
+    let modules: Vec<String> = if modlist.is_some() {
+        params
             .get_many::<String>("use")
             .unwrap()
             .collect::<Vec<_>>()
             .iter()
             .map(|x| x.to_string())
-            .collect();
+            .collect()
     } else {
-        modules = vec![];
-    }
+        vec![]
+    };
 
     if params.get_flag("version") {
         println!("Version: {}", VERSION);
