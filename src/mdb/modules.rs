@@ -18,20 +18,20 @@ pub mod modinfo {
         let mut curr_mods: Vec<ModInfo> = vec![];
         let rfe = File::open("/proc/modules");
         if rfe.is_err() {
-            println!("ERROR: {}", rfe.err().unwrap().to_string());
+            log::error!("Error while accessing /proc/modules: {}", rfe.err().unwrap().to_string());
             process::exit(1);
         }
 
         for rfe in BufReader::new(rfe.unwrap()).lines() {
             if rfe.is_err() {
-                println!("ERROR: {}", rfe.err().unwrap().to_string());
+                log::error!("Error while reading /proc/modules: {}", rfe.err().unwrap().to_string());
                 process::exit(1);
             }
 
             let mod_data: Vec<String> = rfe.unwrap().split(" ").map(str::to_string).collect();
 
             if mod_data.len() != 6 {
-                println!("ERROR: Unsupported format - {:?}", mod_data);
+                log::error!("Unsupported format - {:?}", mod_data);
                 process::exit(1);
             }
 
