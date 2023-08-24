@@ -1,10 +1,10 @@
+use crate::mtree::kerman::kman;
 use crate::mtree::kerman::kman::KernelInfo;
-use crate::mtree::{self, kerman::kman};
-use exitcode::{self, OK};
-use std::io::BufRead;
+use exitcode::{self};
+use std::io;
+use std::io::{BufRead, Write};
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
-use std::{fs, io};
 
 /// Module tracker
 /// Used modules are stored a plain-text file in /lib/modules/<version>/modules.active
@@ -108,20 +108,51 @@ impl<'a> ModList<'a> {
 
     /// Write data of used modules to the storage
     fn write(&self) -> Result<(), std::io::Error> {
-        let fr = File::create(self.get_storage_path());
-        if fr.is_err() {
+        let f_res = File::create(self.get_storage_path());
+        if f_res.is_err() {
             return Err(std::io::Error::new(
                 ErrorKind::Other,
-                format!("Error while saving data about used modules: {}", fr.err().unwrap()),
+                format!("Error while saving data about used modules: {}", f_res.err().unwrap()),
             ));
         }
+
+        let mut f_ptr = f_res.unwrap();
+
+        for (modname, modstate) in &self.modlist {
+            let mut s: String;
+            let rw: Result<(), io::Error> = f_ptr.write_all(
+                format!(
+                    "{}:{}\n",
+                    modname,
+                    if modstate < &0 {
+                        "S".to_string()
+                    } else {
+                        modstate.to_string()
+                    }
+                )
+                .as_bytes(),
+            );
+
+            if rw.is_err() {
+                return Err(rw.err().unwrap());
+            }
+        }
+
         Ok(())
     }
 
     /// Add a main module (no dependencies to in). This increases the counter, but doesn't write anything to a disk.
-    pub fn add(&self, name: String, is_static: bool) -> Result<(), std::io::Error> {
+    pub fn add(&mut self, name: String, is_static: bool) -> Result<(), std::io::Error> {
         log::info!("Adding \"{}\"", name);
-        Ok(())
+
+        let mut state: i16 = 1;
+        let ex_state = self.modlist.get(&name);
+        if let Some(ex) = ex_state {
+            state = ex + 1;
+        }
+
+        self.modlist.insert(name, if is_static { -1 } else { state });
+        self.write()
     }
 
     /// Remove a module. This decreases the counter, but doesn't write anything to a disk.
