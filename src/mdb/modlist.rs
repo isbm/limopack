@@ -119,17 +119,26 @@ impl<'a> ModList<'a> {
     }
 
     /// Add a main module (no dependencies to in). This increases the counter, but doesn't write anything to a disk.
-    pub fn add(&self, name: String, is_static: bool) {}
+    pub fn add(&self, name: String, is_static: bool) -> Result<(), std::io::Error> {
+        log::info!("Adding \"{}\"", name);
+        Ok(())
+    }
 
     /// Remove a module. This decreases the counter, but doesn't write anything to a disk.
-    pub fn remove(&self, name: String) {}
+    pub fn remove(&self, name: String) -> Result<(), std::io::Error> {
+        log::info!("Removing \"{}\"", name);
+        Ok(())
+    }
 
     /// Apply changes on a disk: remove from the media unused modules
-    pub fn commit(&self) {
+    pub fn commit(&self) -> Result<(), std::io::Error> {
+        log::info!("Applying changes");
         let r = self.write();
         if r.is_err() {
             log::error!("Error while saving data about used modules: {}", r.err().unwrap());
             process::exit(exitcode::IOERR);
         }
+
+        Ok(())
     }
 }
