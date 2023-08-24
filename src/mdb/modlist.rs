@@ -1,7 +1,10 @@
-use crate::mtree::{self, kerman::kman};
 use crate::mtree::kerman::kman::KernelInfo;
-use exitcode;
+use crate::mtree::{self, kerman::kman};
+use exitcode::{self, OK};
+use std::io::BufRead;
+use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
+use std::{fs, io};
 
 /// Module tracker
 /// Used modules are stored a plain-text file in /lib/modules/<version>/modules.active
@@ -46,32 +49,59 @@ pub struct ModList<'a> {
     kinfo: &'a KernelInfo<'a>,
 }
 
-impl <'a> ModList<'a> {
+impl<'a> ModList<'a> {
     /// Constructor
-    pub fn new(kinfo: &'a KernelInfo) -> Self {
-        ModList {
+    pub fn new(kinfo: &'a KernelInfo) -> Result<Self, std::io::Error> {
+        let mut modlist = ModList {
             modlist: HashMap::default(),
-            kinfo: kinfo
+            kinfo: kinfo,
+        };
+
+        let loaded = modlist.load();
+        if loaded.is_err() {
+            Err(loaded.err().unwrap())
+        } else {
+            Ok(modlist)
         }
     }
 
     // Get storage path
-    fn get_storage_path(&self) -> String {
-        Path::new(kman::MOD_D)
-            .join(&self.kinfo.version.to_owned())
-            .join(MOD_STOR)
-            .to_str()
-            .unwrap()
-            .to_string()
+    fn get_storage_path(&self) -> PathBuf {
+        Path::new(kman::MOD_D).join(&self.kinfo.version.to_owned()).join(MOD_STOR)
     }
 
     /// Read used modules from the storage
-    fn load(&self) -> Result<(), std::io::Error> {
-        let rfp: Result<File, std::io::Error> = File::open(self.get_storage_path());
+    fn load(&mut self) -> Result<(), std::io::Error> {
+        let st_pth = self.get_storage_path();
+        if !st_pth.exists() {
+            log::warn!("No module storage index found. Skipping...");
+            return Ok(());
+        }
+
+        let rfp: Result<File, std::io::Error> = File::open(st_pth);
         if rfp.is_err() {
             return Err(rfp.err().unwrap());
         }
-        let x = rfp.unwrap();
+
+        for mut data in io::BufReader::new(rfp.unwrap()).lines().flatten() {
+            data = data.trim().to_string();
+            if data.starts_with('#') || data.is_empty() || !data.contains(':') {
+                continue;
+            }
+            let state_kw: Vec<String> = data.split(':').map(|x| x.to_string()).collect();
+            if state_kw.len() != 2 {
+                log::warn!("Suspicious entry found: {}. Skipping...", data);
+                continue;
+            }
+
+            let state_ptr: i16 = if state_kw[1] == "S" {
+                -1
+            } else {
+                state_kw[1].to_string().parse::<i16>().unwrap()
+            };
+
+            self.modlist.insert(state_kw[0].to_owned(), state_ptr);
+        }
 
         Ok(())
     }
@@ -88,7 +118,7 @@ impl <'a> ModList<'a> {
         Ok(())
     }
 
-    /// Add a module. This increases the counter, but doesn't write anything to a disk.
+    /// Add a main module (no dependencies to in). This increases the counter, but doesn't write anything to a disk.
     pub fn add(&self, name: String, is_static: bool) {}
 
     /// Remove a module. This decreases the counter, but doesn't write anything to a disk.
