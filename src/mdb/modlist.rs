@@ -1,10 +1,11 @@
 use crate::mtree::kerman::kman;
 use crate::mtree::kerman::kman::KernelInfo;
+use colored::Colorize;
 use exitcode::{self};
-use std::io;
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
+use std::{fmt::format, io};
 
 /// Module tracker
 /// Used modules are stored a plain-text file in /lib/modules/<version>/modules.active
@@ -109,7 +110,7 @@ impl<'a> ModList<'a> {
     /// Write data of used modules to the storage
     fn write(&self) -> Result<(), std::io::Error> {
         let sp = self.get_storage_path();
-        log::info!("Writing to {:?}", sp.as_path());
+        log::info!("Writing to {}", format!("{:?}", sp.as_path()).to_string().bright_yellow());
         let f_res = File::create(sp);
         if f_res.is_err() {
             return Err(std::io::Error::new(
@@ -145,7 +146,7 @@ impl<'a> ModList<'a> {
 
     /// Add a main module (no dependencies to in). This increases the counter, but doesn't write anything to a disk.
     pub fn add(&mut self, name: String, is_static: bool) -> Result<(), std::io::Error> {
-        log::info!("Adding \"{}\"", name);
+        log::info!("Adding {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
 
         let mut state: i16 = 1;
         let ex_state = self.modlist.get(&name);
