@@ -57,6 +57,11 @@ fn main() -> Result<(), Error> {
         actions::do_tree(&debug, &modules);
     } else if params.get_flag("list") {
         actions::do_list(&debug, &modules);
+    } else if params.get_flag("install") {
+        let r = actions::do_add(&debug, &modules);
+        if r.is_err() {
+            return Err(clap::Error::from(r.err().unwrap()));
+        }
     } else {
         cli.print_help().unwrap();
     }
