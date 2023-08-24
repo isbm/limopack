@@ -1,3 +1,4 @@
+use crate::mdb::modlist;
 use crate::mtree::kerman::kman::get_kernel_infos;
 use crate::mtree::moddeps::ktree::KModuleTree;
 
@@ -12,7 +13,7 @@ use crate::mtree::moddeps::ktree::KModuleTree;
 pub fn do_tree(debug: &bool, modules: &[String]) {
     for ki in get_kernel_infos(debug) {
         log::info!("Displaying module dependencies as a tree per a module");
-        let kmtree = KModuleTree::new(ki);
+        let kmtree = KModuleTree::new(&ki);
         for (m, d) in kmtree.get_specified(modules) {
             println!("{m}");
             for dm in d {
@@ -26,26 +27,45 @@ pub fn do_tree(debug: &bool, modules: &[String]) {
 /// in a flat sorted format
 pub fn do_list(debug: &bool, modules: &[String]) {
     for ki in get_kernel_infos(debug) {
-        let kmtree = KModuleTree::new(ki);
+        let kmtree = KModuleTree::new(&ki);
         for m in kmtree.merge_specified(modules) {
             println!("{m}");
         }
     }
 }
 
+/// Add or remove kernel modules
+fn _add_remove(debug: &bool, add: bool, modules: &[String]) -> Result<(), std::io::Error> {
+    for ki in get_kernel_infos(debug) {
+        let kmtree = KModuleTree::new(&ki);
+        let ml = modlist::ModList::new(&ki);
+
+        for modname in kmtree.get_specified(modules).keys() {
+            if add {
+                ml.add(modname.to_string(), false);
+            } else {
+                ml.remove(modname.to_string());
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Add (register) kernel modules to be preserved
 pub fn do_add(debug: &bool, modules: &[String]) -> Result<(), std::io::Error> {
-    Ok(())
+    _add_remove(debug, true, modules)
 }
 
 /// Remove (unregister) kernel modules from being preserved
 pub fn do_remove(debug: &bool, modules: &[String]) -> Result<(), std::io::Error> {
-    Ok(())
+    _add_remove(debug, false, modules)
 }
 
 /// Commit changes on the disk. This will permanently remove unused kernel modules
 /// from the disk.
-pub fn do_commit(debug: &bool, modules: &[String]) -> Result<(), std::io::Error> {
+pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
+    for ki in get_kernel_infos(debug) {
+    }
     Ok(())
 }
 
