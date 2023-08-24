@@ -4,11 +4,11 @@ pub mod ktree {
     use std::collections::HashMap;
 
     pub struct KModuleTree<'kinfo> {
-        kernel: KernelInfo<'kinfo>,
+        kernel: &'kinfo KernelInfo<'kinfo>,
     }
 
     impl<'kinfo> KModuleTree<'kinfo> {
-        pub fn new(kinfo: KernelInfo<'kinfo>) -> Self {
+        pub fn new(kinfo: &'kinfo KernelInfo<'kinfo>) -> Self {
             KModuleTree { kernel: kinfo }
         }
 

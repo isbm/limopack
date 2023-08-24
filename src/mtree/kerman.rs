@@ -7,9 +7,9 @@ pub mod kman {
     pub static MOD_DEP_F: &str = "modules.dep";
 
     /// Metadata about the kernel and details about it
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub struct KernelInfo<'kinfo> {
-        version: String,
+        pub version: String,
         path: PathBuf,
         dep_path: PathBuf,
         deplist: HashMap<String, Vec<String>>,

@@ -1,5 +1,5 @@
 use crate::mtree::{self, kerman::kman};
-use clap::Error;
+use crate::mtree::kerman::kman::KernelInfo;
 use exitcode;
 use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
 
@@ -36,29 +36,29 @@ use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
 
 static MOD_STOR: &str = "modules.active";
 
-pub struct ModList {
+pub struct ModList<'a> {
     // Map to path to a module which referring to a number.
     // The number is referring to negative, zero and positive values:
     //   - negative value (-1) is "S" (static module)
     //   - zero value makes a module to be a subject for garbage collection
     //   - any positive value is a counter for the references
     modlist: HashMap<String, i16>,
-    kversion: String,
+    kinfo: &'a KernelInfo<'a>,
 }
 
-impl ModList {
+impl <'a> ModList<'a> {
     /// Constructor
-    pub fn new(kversion: String) -> Self {
+    pub fn new(kinfo: &'a KernelInfo) -> Self {
         ModList {
             modlist: HashMap::default(),
-            kversion,
+            kinfo: kinfo
         }
     }
 
     // Get storage path
     fn get_storage_path(&self) -> String {
         Path::new(kman::MOD_D)
-            .join(&self.kversion)
+            .join(&self.kinfo.version.to_owned())
             .join(MOD_STOR)
             .to_str()
             .unwrap()
