@@ -39,11 +39,8 @@ pub fn cli(version: &'static str) -> Command {
                 )
                 .action(ArgAction::SetTrue),
         )
-        .arg(Arg::new("pkname")
-                .short('p')
-                .long("pkname")
-                .value_delimiter(',')
-                .help("Specify a package name, which needs to be un-registered
+        .arg(Arg::new("pkname").short('p').long("pkname").value_delimiter(',').help(
+            "Specify a package name, which needs to be un-registered
   from the package manager database in order to be visible to the system as
   non-existing, so the system can bring it again for an update or installation.\n",
         ))
@@ -59,7 +56,8 @@ pub fn cli(version: &'static str) -> Command {
             Arg::new("remove")
                 .short('r')
                 .long("remove")
-                .help("Remove specified modules as no longer needed for the system,
+                .help(
+                    "Remove specified modules as no longer needed for the system,
   so they can be purged from the disk. This operation only marks
   the modules to be removed, but does not actually removes them.",
                 )
@@ -69,7 +67,8 @@ pub fn cli(version: &'static str) -> Command {
             Arg::new("apply")
                 .short('a')
                 .long("apply")
-                .help("Apply the changes, vacuuming all unneded/unregisterd (non-marked)
+                .help(
+                    "Apply the changes, vacuuming all unneded/unregisterd (non-marked)
   kernel modules, those are still exist on a disk, but
   always unused.\n",
                 )

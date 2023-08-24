@@ -38,8 +38,13 @@ pub fn do_list(debug: &bool, modules: &[String]) {
 fn _add_remove(debug: &bool, add: bool, modules: &[String]) -> Result<(), std::io::Error> {
     for ki in get_kernel_infos(debug) {
         let kmtree = KModuleTree::new(&ki);
-        let ml = modlist::ModList::new(&ki);
+        let rml = modlist::ModList::new(&ki);
 
+        if rml.is_err() {
+            return Err(rml.err().unwrap());
+        }
+
+        let ml = rml.unwrap();
         for modname in kmtree.get_specified(modules).keys() {
             if add {
                 ml.add(modname.to_string(), false);
@@ -64,8 +69,7 @@ pub fn do_remove(debug: &bool, modules: &[String]) -> Result<(), std::io::Error>
 /// Commit changes on the disk. This will permanently remove unused kernel modules
 /// from the disk.
 pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
-    for ki in get_kernel_infos(debug) {
-    }
+    for ki in get_kernel_infos(debug) {}
     Ok(())
 }
 
