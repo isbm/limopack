@@ -39,7 +39,14 @@ pub fn cli(version: &'static str) -> Command {
                 )
                 .action(ArgAction::SetTrue),
         )
-
+        .arg(Arg::new("pkname")
+                .short('p')
+                .long("pkname")
+                .value_delimiter(',')
+                .help("Specify a package name, which needs to be un-registered
+  from the package manager database in order to be visible to the system as
+  non-existing, so the system can bring it again for an update or installation.\n",
+        ))
         // Writable
         .arg(
             Arg::new("install")
