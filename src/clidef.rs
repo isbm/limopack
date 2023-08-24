@@ -20,6 +20,13 @@ pub fn cli(version: &'static str) -> Command {
                 .help("Specify comma-separated list of kernel modules to be used.\n")
                 .value_delimiter(','),
         )
+        .arg(
+            Arg::new("static")
+                .short('s')
+                .long("static")
+                .action(ArgAction::SetTrue)
+                .help("Use specified modules as static (i.e. stays permanently)"),
+        )
         // Display
         .arg(
             Arg::new("tree")

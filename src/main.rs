@@ -58,9 +58,9 @@ fn main() -> Result<(), Error> {
     } else if params.get_flag("list") {
         actions::do_list(&debug, &modules);
     } else if params.get_flag("install") {
-        let r = actions::do_add(&debug, &modules);
+        let r = actions::do_add(&debug, params.get_flag("static"), &modules);
         if r.is_err() {
-            return Err(clap::Error::from(r.err().unwrap()));
+            log::error!("{}", r.err().unwrap().to_string());
         }
     } else {
         cli.print_help().unwrap();

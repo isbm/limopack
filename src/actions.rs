@@ -35,7 +35,7 @@ pub fn do_list(debug: &bool, modules: &[String]) {
 }
 
 /// Add or remove kernel modules
-fn _add_remove(debug: &bool, add: bool, modules: &[String]) -> Result<(), std::io::Error> {
+fn _add_remove(debug: &bool, add: bool, is_static: bool, modules: &[String]) -> Result<(), std::io::Error> {
     for ki in get_kernel_infos(debug) {
         let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
         let rml: Result<modlist::ModList<'_>, std::io::Error> = modlist::ModList::new(&ki);
@@ -47,7 +47,7 @@ fn _add_remove(debug: &bool, add: bool, modules: &[String]) -> Result<(), std::i
         let mut ml: modlist::ModList<'_> = rml.unwrap();
         for modname in kmtree.get_specified(modules).keys() {
             let ra: Result<(), std::io::Error> = if add {
-                ml.add(modname.to_string(), false)
+                ml.add(modname.to_string(), is_static)
             } else {
                 ml.remove(modname.to_string())
             };
@@ -60,13 +60,13 @@ fn _add_remove(debug: &bool, add: bool, modules: &[String]) -> Result<(), std::i
 }
 
 /// Add (register) kernel modules to be preserved
-pub fn do_add(debug: &bool, modules: &[String]) -> Result<(), std::io::Error> {
-    _add_remove(debug, true, modules)
+pub fn do_add(debug: &bool, is_static: bool, modules: &[String]) -> Result<(), std::io::Error> {
+    _add_remove(debug, true, is_static, modules)
 }
 
 /// Remove (unregister) kernel modules from being preserved
 pub fn do_remove(debug: &bool, modules: &[String]) -> Result<(), std::io::Error> {
-    _add_remove(debug, false, modules)
+    _add_remove(debug, false, false, modules)
 }
 
 /// Commit changes on the disk. This will permanently remove unused kernel modules

@@ -108,7 +108,9 @@ impl<'a> ModList<'a> {
 
     /// Write data of used modules to the storage
     fn write(&self) -> Result<(), std::io::Error> {
-        let f_res = File::create(self.get_storage_path());
+        let sp = self.get_storage_path();
+        log::info!("Writing to {:?}", sp.as_path());
+        let f_res = File::create(sp);
         if f_res.is_err() {
             return Err(std::io::Error::new(
                 ErrorKind::Other,
