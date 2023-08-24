@@ -32,3 +32,25 @@ pub fn do_list(debug: &bool, modules: &[String]) {
         }
     }
 }
+
+/// Add (register) kernel modules to be preserved
+pub fn do_add(debug: &bool, modules: &[String]) -> Result<(), std::io::Error> {
+    Ok(())
+}
+
+/// Remove (unregister) kernel modules from being preserved
+pub fn do_remove(debug: &bool, modules: &[String]) -> Result<(), std::io::Error> {
+    Ok(())
+}
+
+/// Commit changes on the disk. This will permanently remove unused kernel modules
+/// from the disk.
+pub fn do_commit(debug: &bool, modules: &[String]) -> Result<(), std::io::Error> {
+    Ok(())
+}
+
+/// Unregister specified package from the package manager database.
+/// Yuck!...
+pub fn do_unregister_pkg(debug: &bool, pkgname: String) -> Result<(), std::io::Error> {
+    Ok(())
+}
