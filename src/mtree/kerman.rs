@@ -3,8 +3,8 @@ pub mod kman {
     use std::fs::{read_dir, read_to_string};
     use std::path::{Path, PathBuf};
 
-    static MOD_D: &str = "/lib/modules";
-    static MOD_DEP_F: &str = "modules.dep";
+    pub static MOD_D: &str = "/lib/modules";
+    pub static MOD_DEP_F: &str = "modules.dep";
 
     /// Metadata about the kernel and details about it
     #[derive(Debug)]
