@@ -54,7 +54,7 @@ impl<'a> ModList<'a> {
     pub fn new(kinfo: &'a KernelInfo) -> Result<Self, std::io::Error> {
         let mut modlist = ModList {
             modlist: HashMap::default(),
-            kinfo: kinfo,
+            kinfo,
         };
 
         let loaded = modlist.load();
@@ -67,7 +67,7 @@ impl<'a> ModList<'a> {
 
     // Get storage path
     fn get_storage_path(&self) -> PathBuf {
-        Path::new(kman::MOD_D).join(&self.kinfo.version.to_owned()).join(MOD_STOR)
+        Path::new(kman::MOD_D).join(&self.kinfo.version).join(MOD_STOR)
     }
 
     /// Read used modules from the storage
