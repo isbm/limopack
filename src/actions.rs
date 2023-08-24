@@ -13,7 +13,7 @@ use crate::mtree::moddeps::ktree::KModuleTree;
 pub fn do_tree(debug: &bool, modules: &[String]) {
     for ki in get_kernel_infos(debug) {
         log::info!("Displaying module dependencies as a tree per a module");
-        let kmtree = KModuleTree::new(&ki);
+        let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
         for (m, d) in kmtree.get_specified(modules) {
             println!("{m}");
             for dm in d {
@@ -27,7 +27,7 @@ pub fn do_tree(debug: &bool, modules: &[String]) {
 /// in a flat sorted format
 pub fn do_list(debug: &bool, modules: &[String]) {
     for ki in get_kernel_infos(debug) {
-        let kmtree = KModuleTree::new(&ki);
+        let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
         for m in kmtree.merge_specified(modules) {
             println!("{m}");
         }
@@ -37,19 +37,22 @@ pub fn do_list(debug: &bool, modules: &[String]) {
 /// Add or remove kernel modules
 fn _add_remove(debug: &bool, add: bool, modules: &[String]) -> Result<(), std::io::Error> {
     for ki in get_kernel_infos(debug) {
-        let kmtree = KModuleTree::new(&ki);
-        let rml = modlist::ModList::new(&ki);
+        let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
+        let rml: Result<modlist::ModList<'_>, std::io::Error> = modlist::ModList::new(&ki);
 
         if rml.is_err() {
             return Err(rml.err().unwrap());
         }
 
-        let ml = rml.unwrap();
+        let mut ml: modlist::ModList<'_> = rml.unwrap();
         for modname in kmtree.get_specified(modules).keys() {
-            if add {
-                ml.add(modname.to_string(), false);
+            let ra: Result<(), std::io::Error> = if add {
+                ml.add(modname.to_string(), false)
             } else {
-                ml.remove(modname.to_string());
+                ml.remove(modname.to_string())
+            };
+            if ra.is_err() {
+                return Err(ra.err().unwrap());
             }
         }
     }
