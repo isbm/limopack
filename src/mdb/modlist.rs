@@ -1,6 +1,7 @@
 use crate::mtree::{self, kerman::kman};
-use std::{collections::HashMap, fs::File, path::Path, process};
+use clap::Error;
 use exitcode;
+use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
 
 /// Module tracker
 /// Used modules are stored a plain-text file in /lib/modules/<version>/modules.active
@@ -77,6 +78,13 @@ impl ModList {
 
     /// Write data of used modules to the storage
     fn write(&self) -> Result<(), std::io::Error> {
+        let fr = File::create(self.get_storage_path());
+        if fr.is_err() {
+            return Err(std::io::Error::new(
+                ErrorKind::Other,
+                format!("Error while saving data about used modules: {}", fr.err().unwrap()),
+            ));
+        }
         Ok(())
     }
 
@@ -86,14 +94,11 @@ impl ModList {
     /// Remove a module. This decreases the counter, but doesn't write anything to a disk.
     pub fn remove(&self, name: String) {}
 
-    /// Apply changes to a disk
+    /// Apply changes on a disk: remove from the media unused modules
     pub fn commit(&self) {
         let r = self.write();
         if r.is_err() {
-            log::error!(
-                "Error while saving data about used modules: {}",
-                r.err().unwrap()
-            );
+            log::error!("Error while saving data about used modules: {}", r.err().unwrap());
             process::exit(exitcode::IOERR);
         }
     }

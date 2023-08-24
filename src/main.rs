@@ -30,7 +30,7 @@ fn main() -> Result<(), Error> {
         return {
             cli.print_help().unwrap();
             Ok(())
-        }
+        };
     }
 
     let params = cli.to_owned().get_matches();

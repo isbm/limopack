@@ -12,16 +12,14 @@ pub fn cli(version: &'static str) -> Command {
     Command::new("limopack")
         .version(version)
         .about("[Li]nux [Mo]dule [Pack]age Helper")
-
         // Config
         .arg(
             Arg::new("use")
                 .short('u')
                 .long("use")
-                .help("Specifycomma-separated list of kernel modules to be used.\n")
-                .value_delimiter(',')
+                .help("Specify comma-separated list of kernel modules to be used.\n")
+                .value_delimiter(','),
         )
-
         // Display
         .arg(
             Arg::new("tree")
@@ -34,10 +32,12 @@ pub fn cli(version: &'static str) -> Command {
             Arg::new("list")
                 .short('l')
                 .long("list")
-                .help("Display in a sorted flat list format all modules that will
+                .help(
+                    "Display in a sorted flat list format all modules that will
   be used. This includes all dependencies and already marked
-  and existing modules.\n")
-                .action(ArgAction::SetTrue)
+  and existing modules.",
+                )
+                .action(ArgAction::SetTrue),
         )
 
         // Writable
@@ -46,7 +46,7 @@ pub fn cli(version: &'static str) -> Command {
                 .short('i')
                 .long("install")
                 .help("Mark specified modules as needed for the system.")
-                .action(ArgAction::SetTrue)
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("remove")
@@ -54,8 +54,9 @@ pub fn cli(version: &'static str) -> Command {
                 .long("remove")
                 .help("Remove specified modules as no longer needed for the system,
   so they can be purged from the disk. This operation only marks
-  the modules to be removed, but does not actually removes them.")
-                .action(ArgAction::SetTrue)
+  the modules to be removed, but does not actually removes them.",
+                )
+                .action(ArgAction::SetTrue),
         )
         .arg(
             Arg::new("apply")
@@ -63,10 +64,10 @@ pub fn cli(version: &'static str) -> Command {
                 .long("apply")
                 .help("Apply the changes, vacuuming all unneded/unregisterd (non-marked)
   kernel modules, those are still exist on a disk, but
-  always unused.\n")
-                .action(ArgAction::SetTrue)
+  always unused.\n",
+                )
+                .action(ArgAction::SetTrue),
         )
-
         // Other
         .arg(
             Arg::new("debug")

@@ -1,2 +1,2 @@
-pub mod modules;
 pub mod modlist;
+pub mod modules;

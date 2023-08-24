@@ -41,10 +41,7 @@ pub mod kman {
             }
 
             self.path = self.path.join(&self.version);
-            self.dep_path = self
-                .dep_path
-                .join(self.path.as_os_str())
-                .join(MOD_DEP_F);
+            self.dep_path = self.dep_path.join(self.path.as_os_str()).join(MOD_DEP_F);
             self.load_deps();
             self._loaded = true;
 
@@ -58,25 +55,16 @@ pub mod kman {
                 return;
             }
 
-            let modpath = PathBuf::from(MOD_D)
-                .join(&self.version)
-                .join("kernel");
+            let modpath = PathBuf::from(MOD_D).join(&self.version).join("kernel");
             self.is_valid = Path::new(modpath.to_str().unwrap()).is_dir();
             if self.is_valid {
-                for line in read_to_string(self.dep_path.as_os_str())
-                    .unwrap()
-                    .lines()
-                {
+                for line in read_to_string(self.dep_path.as_os_str()).unwrap().lines() {
                     if let Some(sl) = line.split_once(':') {
                         let (modpath, moddeps) = (sl.0.trim(), sl.1.trim());
                         let mut deplist: Vec<String> = vec![];
 
                         if !moddeps.is_empty() {
-                            deplist = moddeps
-                                .split(' ')
-                                .into_iter()
-                                .map(|x| x.to_owned())
-                                .collect();
+                            deplist = moddeps.split(' ').into_iter().map(|x| x.to_owned()).collect();
                             if *self.debug {
                                 log::debug!("Found {} dependencies for {}", deplist.len(), modpath);
                             }
@@ -174,10 +162,7 @@ pub mod kman {
         for fres in read_dir(MOD_D).unwrap() {
             let fd = fres.unwrap();
             if fd.file_type().unwrap().is_dir() {
-                let kinfo: KernelInfo<'_> = KernelInfo::new(
-                    fd.path().file_name().unwrap().to_str().unwrap(),
-                    debug,
-                );
+                let kinfo: KernelInfo<'_> = KernelInfo::new(fd.path().file_name().unwrap().to_str().unwrap(), debug);
                 if kinfo.is_valid() {
                     kernels.push(kinfo);
                 }

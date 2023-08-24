@@ -14,10 +14,7 @@ pub mod ktree {
 
         /// lsmod
         fn get_loaded_modules(&self) -> Vec<String> {
-            modinfo::lsmod()
-                .iter()
-                .map(|modinfo| modinfo.name.to_owned())
-                .collect()
+            modinfo::lsmod().iter().map(|modinfo| modinfo.name.to_owned()).collect()
         }
 
         /// Snapshot currently active modules (lsmod)
