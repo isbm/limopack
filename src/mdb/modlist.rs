@@ -2,11 +2,10 @@ use crate::mtree::kerman::kman;
 use crate::mtree::kerman::kman::KernelInfo;
 use colored::Colorize;
 use exitcode::{self};
-use log::warn;
-use std::io::{BufRead, Error, Write};
+use std::io;
+use std::io::{BufRead, Write};
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
-use std::{fmt::format, io};
 
 /// Module tracker
 /// Used modules are stored a plain-text file in /lib/modules/<version>/modules.active
@@ -116,7 +115,6 @@ impl<'a> ModList<'a> {
         let mut f_ptr = f_res.unwrap();
 
         for (modname, modstate) in &self.modlist {
-            let mut s: String;
             let rw: Result<(), io::Error> = f_ptr.write_all(
                 format!("{}:{}\n", modname, if modstate < &0 { "S".to_string() } else { modstate.to_string() }).as_bytes(),
             );
@@ -132,7 +130,7 @@ impl<'a> ModList<'a> {
     /// Add a main module (no dependencies to in). This increases the counter, but doesn't write anything to a disk.
     pub fn add(&mut self, name: String, is_static: bool) {
         let optval = self.modlist.get(&name);
-        if optval.is_none() {
+        if let Some(..) = optval {
             // new entry
             log::info!("Adding {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
             self.modlist.insert(name, if is_static { -1 } else { 1 });
@@ -174,10 +172,10 @@ impl<'a> ModList<'a> {
             match self.modlist.remove(&name) {
                 Some(_) => {}
                 None => {
-                    return Err((std::io::Error::new(
+                    return Err(std::io::Error::new(
                         ErrorKind::NotFound,
                         format!("Unable to remove {:?}: module not found", name),
-                    )));
+                    ));
                 }
             }
         } else if *state > 0 {
