@@ -51,6 +51,10 @@ fn _add_remove(debug: &bool, add: bool, is_static: bool, modules: &mut Vec<Strin
             }
         }
 
+        modules.sort();
+
+        log::info!("Scope of {} modules", modules.len());
+
         let mut ml: modlist::ModList<'_> = rml.unwrap();
         for modname in &mut *modules {
             if add {
