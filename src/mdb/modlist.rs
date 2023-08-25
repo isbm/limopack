@@ -2,7 +2,8 @@ use crate::mtree::kerman::kman;
 use crate::mtree::kerman::kman::KernelInfo;
 use colored::Colorize;
 use exitcode::{self};
-use std::io::{BufRead, Write};
+use log::warn;
+use std::io::{BufRead, Error, Write};
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
 use std::{fmt::format, io};
@@ -53,10 +54,7 @@ pub struct ModList<'a> {
 impl<'a> ModList<'a> {
     /// Constructor
     pub fn new(kinfo: &'a KernelInfo) -> Result<Self, std::io::Error> {
-        let mut modlist = ModList {
-            modlist: HashMap::default(),
-            kinfo,
-        };
+        let mut modlist = ModList { modlist: HashMap::default(), kinfo };
 
         let loaded = modlist.load();
         if loaded.is_err() {
@@ -95,11 +93,7 @@ impl<'a> ModList<'a> {
                 continue;
             }
 
-            let state_ptr: i16 = if state_kw[1] == "S" {
-                -1
-            } else {
-                state_kw[1].to_string().parse::<i16>().unwrap()
-            };
+            let state_ptr: i16 = if state_kw[1] == "S" { -1 } else { state_kw[1].to_string().parse::<i16>().unwrap() };
 
             self.modlist.insert(state_kw[0].to_owned(), state_ptr);
         }
@@ -110,7 +104,7 @@ impl<'a> ModList<'a> {
     /// Write data of used modules to the storage
     fn write(&self) -> Result<(), std::io::Error> {
         let sp = self.get_storage_path();
-        log::info!("Writing to {}", format!("{:?}", sp.as_path()).to_string().bright_yellow());
+        log::info!("Writing to {}", format!("{:?}", sp.as_path()).bright_yellow());
         let f_res = File::create(sp);
         if f_res.is_err() {
             return Err(std::io::Error::new(
@@ -124,16 +118,7 @@ impl<'a> ModList<'a> {
         for (modname, modstate) in &self.modlist {
             let mut s: String;
             let rw: Result<(), io::Error> = f_ptr.write_all(
-                format!(
-                    "{}:{}\n",
-                    modname,
-                    if modstate < &0 {
-                        "S".to_string()
-                    } else {
-                        modstate.to_string()
-                    }
-                )
-                .as_bytes(),
+                format!("{}:{}\n", modname, if modstate < &0 { "S".to_string() } else { modstate.to_string() }).as_bytes(),
             );
 
             if rw.is_err() {
@@ -145,22 +130,63 @@ impl<'a> ModList<'a> {
     }
 
     /// Add a main module (no dependencies to in). This increases the counter, but doesn't write anything to a disk.
-    pub fn add(&mut self, name: String, is_static: bool) -> Result<(), std::io::Error> {
-        log::info!("Adding {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
-
-        let mut state: i16 = 1;
-        let ex_state = self.modlist.get(&name);
-        if let Some(ex) = ex_state {
-            state = ex + 1;
+    pub fn add(&mut self, name: String, is_static: bool) {
+        let optval = self.modlist.get(&name);
+        if optval.is_none() {
+            // new entry
+            log::info!("Adding {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
+            self.modlist.insert(name, if is_static { -1 } else { 1 });
+        } else {
+            let refcount = optval.unwrap();
+            if *refcount > 0 {
+                log::info!("Updating {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
+                self.modlist.insert(name, refcount + 1);
+            } else {
+                log::warn!("Skipping static module \"{}\"", name.bright_yellow());
+            }
         }
+    }
 
-        self.modlist.insert(name, if is_static { -1 } else { state });
+    /// Save current state to the disk
+    pub fn save(&self) -> Result<(), std::io::Error> {
         self.write()
     }
 
-    /// Remove a module. This decreases the counter, but doesn't write anything to a disk.
-    pub fn remove(&self, name: String) -> Result<(), std::io::Error> {
-        log::info!("Removing \"{}\"", name);
+    /// Remove a module from the tree.
+    ///
+    /// Note, it does not removes a module from the list iff there are no more counters
+    /// left and the pointers are zero. This decreases the counter, but doesn't write
+    /// anything to a disk.
+    pub fn remove(&mut self, name: String) -> Result<(), std::io::Error> {
+        let mut optval = self.modlist.get(&name);
+        if optval.is_none() {
+            return Err(std::io::Error::new(ErrorKind::NotFound, format!("Unable to remove {:?}: module not found", name)));
+        }
+
+        let state: &mut i16 = &mut optval.as_mut().unwrap().to_owned();
+        if *state > 0 {
+            *state -= 1;
+        }
+
+        #[allow(clippy::comparison_chain)]
+        if *state == 0 {
+            log::info!("Removing \"{}\"", name);
+            match self.modlist.remove(&name) {
+                Some(_) => {}
+                None => {
+                    return Err((std::io::Error::new(
+                        ErrorKind::NotFound,
+                        format!("Unable to remove {:?}: module not found", name),
+                    )));
+                }
+            }
+        } else if *state > 0 {
+            log::info!("Keeping \"{}\"", name);
+            self.modlist.insert(name, *state);
+        } else {
+            log::warn!("Skipping static module \"{}\"", name);
+        }
+
         Ok(())
     }
 

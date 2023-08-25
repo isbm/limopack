@@ -14,7 +14,7 @@ pub fn do_tree(debug: &bool, modules: &[String]) {
     for ki in get_kernel_infos(debug) {
         log::info!("Displaying module dependencies as a tree per a module");
         let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
-        for (m, d) in kmtree.get_specified(modules) {
+        for (m, d) in kmtree.get_specified_deps(modules) {
             println!("{m}");
             for dm in d {
                 println!("  \\__{dm}");
@@ -28,14 +28,14 @@ pub fn do_tree(debug: &bool, modules: &[String]) {
 pub fn do_list(debug: &bool, modules: &[String]) {
     for ki in get_kernel_infos(debug) {
         let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
-        for m in kmtree.merge_specified(modules) {
+        for m in kmtree.merge_specified_deps(modules) {
             println!("{m}");
         }
     }
 }
 
 /// Add or remove kernel modules
-fn _add_remove(debug: &bool, add: bool, is_static: bool, modules: &[String]) -> Result<(), std::io::Error> {
+fn _add_remove(debug: &bool, add: bool, is_static: bool, modules: &mut Vec<String>) -> Result<(), std::io::Error> {
     for ki in get_kernel_infos(debug) {
         let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
         let rml: Result<modlist::ModList<'_>, std::io::Error> = modlist::ModList::new(&ki);
@@ -44,29 +44,39 @@ fn _add_remove(debug: &bool, add: bool, is_static: bool, modules: &[String]) -> 
             return Err(rml.err().unwrap());
         }
 
-        let mut ml: modlist::ModList<'_> = rml.unwrap();
-        for modname in kmtree.get_specified(modules).keys() {
-            let ra: Result<(), std::io::Error> = if add {
-                ml.add(modname.to_string(), is_static)
-            } else {
-                ml.remove(modname.to_string())
-            };
-            if ra.is_err() {
-                return Err(ra.err().unwrap());
+        // Use lsmod?
+        if modules.is_empty() {
+            for s in kmtree.get_loaded_modules().iter().map(|x| x.to_owned()).collect::<Vec<String>>() {
+                modules.push(s);
             }
         }
+
+        let mut ml: modlist::ModList<'_> = rml.unwrap();
+        for modname in &mut *modules {
+            if add {
+                ml.add(modname.to_string(), is_static);
+            } else {
+                return ml.remove(modname.to_string());
+            };
+        }
+
+        let res = ml.save();
+        if res.is_err() {
+            return Err(res.err().unwrap());
+        }
     }
+
     Ok(())
 }
 
 /// Add (register) kernel modules to be preserved
 pub fn do_add(debug: &bool, is_static: bool, modules: &[String]) -> Result<(), std::io::Error> {
-    _add_remove(debug, true, is_static, modules)
+    _add_remove(debug, true, is_static, &mut modules.iter().map(|x| x.to_string()).collect())
 }
 
 /// Remove (unregister) kernel modules from being preserved
 pub fn do_remove(debug: &bool, modules: &[String]) -> Result<(), std::io::Error> {
-    _add_remove(debug, false, false, modules)
+    _add_remove(debug, false, false, &mut modules.iter().map(|x| x.to_string()).collect())
 }
 
 /// Commit changes on the disk. This will permanently remove unused kernel modules

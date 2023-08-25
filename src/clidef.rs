@@ -1,5 +1,6 @@
 use clap::builder::styling;
 use clap::{Arg, ArgAction, Command};
+use colored::Colorize;
 
 /// Define CLI arguments and styling
 pub fn cli(version: &'static str) -> Command {
@@ -51,18 +52,34 @@ pub fn cli(version: &'static str) -> Command {
                 .short('i')
                 .long("install")
                 .action(ArgAction::SetTrue)
+                .conflicts_with_all(["remove"])
                 .help("Mark specified modules as needed for the system."),
         )
-        .arg(Arg::new("remove").short('r').long("remove").action(ArgAction::SetTrue).help(
-            "Remove specified modules as no longer needed for the system,
+        .arg(
+            Arg::new("remove")
+                .short('r')
+                .long("remove")
+                .conflicts_with_all(["install"])
+                .action(ArgAction::SetTrue)
+                .help(
+                    "Remove specified modules as no longer needed for the system,
   so they can be purged from the disk. This operation only marks
   the modules to be removed, but does not actually removes them.",
-        ))
-        .arg(Arg::new("apply").short('a').long("apply").action(ArgAction::SetTrue).help(
-            "Apply the changes, vacuuming all unneded/unregisterd (non-marked)
-  kernel modules, those are still exist on a disk, but
-  always unused.\n",
-        ))
+                ),
+        )
+        .arg(
+            Arg::new("apply")
+                .short('a')
+                .long("apply")
+                .conflicts_with_all(["use", "static", "tree", "list", "pkname", "install", "remove"])
+                .action(ArgAction::SetTrue)
+                .help(format!(
+                    "{}{}",
+                    "Apply the changes, vacuuming all unneded/unregisterd (non-marked)
+  kernel modules, those are still exist on a disk, but always unused.\n",
+                    "  NOTE: this option can be only used alone, as it commits the changes.\n".yellow()
+                )),
+        )
         // Other
         .arg(
             Arg::new("debug")
