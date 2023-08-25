@@ -1,3 +1,5 @@
+use std::io::ErrorKind;
+
 use crate::mdb::modlist;
 use crate::mtree::kerman::kman::get_kernel_infos;
 use crate::mtree::moddeps::ktree::KModuleTree;
@@ -60,7 +62,10 @@ fn _add_remove(debug: &bool, add: bool, is_static: bool, modules: &mut Vec<Strin
             if add {
                 ml.add(modname.to_string(), is_static);
             } else {
-                return ml.remove(modname.to_string());
+                let res = ml.remove(modname.to_string());
+                if res.is_err() {
+                    return Err(std::io::Error::new(ErrorKind::InvalidInput, res.err().unwrap()));
+                }
             };
         }
 

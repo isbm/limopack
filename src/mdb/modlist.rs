@@ -181,7 +181,7 @@ impl<'a> ModList<'a> {
                 }
             }
         } else if *state > 0 {
-            log::info!("Keeping \"{}\"", name);
+            log::info!("Keeping \"{}\" because of {} references", name, *state);
             self.modlist.insert(name, *state);
         } else {
             log::warn!("Skipping static module \"{}\"", name);
