@@ -1,6 +1,6 @@
+use chrono::Local;
 use colored::{self, Colorize};
 use log::{Level, Metadata, Record};
-use chrono::Local;
 
 pub(crate) struct STDOUTLogger;
 
