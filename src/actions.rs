@@ -99,11 +99,7 @@ pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
         match modlist::ModList::new(&ki) {
             Ok(ml) => {
                 let mut diff_mods: Vec<String> = vec![];
-                let mut idx_mods: Vec<String> = vec![];
-                for mname in ml.get_modules() {
-                    idx_mods.push(ki.expand_module_name(&mname).to_owned());
-                }
-
+                let idx_mods: Vec<String> = ml.get_modules().iter().map(|m| ki.expand_module_name(&m).to_owned()).collect();
                 let disk_mods = ki.get_disk_modules();
 
                 for dmod in &disk_mods {
