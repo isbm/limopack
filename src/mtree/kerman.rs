@@ -125,7 +125,7 @@ pub mod kman {
             match out {
                 Ok(_) => match String::from_utf8(out.unwrap().stdout) {
                     Ok(data) => {
-                        for line in data.lines().map(|el| el.replace(" ", "")) {
+                        for line in data.lines().map(|el| el.replace(' ', "")) {
                             if line.starts_with("filename:/") && line.contains("/kernel/") {
                                 let t_modname = format!("kernel/{}", line.split("/kernel/").collect::<Vec<&str>>()[1]);
                                 for fmodname in self.deplist.keys() {
