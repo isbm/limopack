@@ -188,7 +188,6 @@ pub mod kman {
 
         /// Get all found modules
         pub fn get_disk_modules(&self) -> Vec<String> {
-            let mut mods: Vec<String> = vec![];
             let mut buff: HashSet<String> = HashSet::default();
 
             for (modname, moddeps) in &self.deplist {
@@ -196,7 +195,7 @@ pub mod kman {
                 buff.extend(moddeps.to_owned());
             }
 
-            mods = buff.iter().map(|x| x.to_string()).collect();
+            let mut mods: Vec<String> = buff.iter().map(|x| x.to_string()).collect();
             mods.sort();
 
             mods
