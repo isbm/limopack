@@ -1,11 +1,10 @@
 use crate::mtree::kerman::kman;
 use crate::mtree::kerman::kman::KernelInfo;
 use colored::Colorize;
-use exitcode::{self};
-use std::io::{self, Error};
+use std::io::{self};
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
-use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
+use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path};
 
 /// Module tracker
 /// Used modules are stored a plain-text file in /lib/modules/<version>/modules.active
@@ -192,6 +191,7 @@ impl<'a> ModList<'a> {
     /// Apply changes on a disk: remove from the media unused modules
     pub fn commit(&self) -> Result<(), std::io::Error> {
         log::info!("Applying changes");
-        self.write().map_err(|e| Error::new(e.kind(), format!("Error while saving data about used modules: {}", e)))
+        //self.write().map_err(|e| Error::new(e.kind(), format!("Error while saving data about used modules: {}", e)))
+        Ok(())
     }
 }
