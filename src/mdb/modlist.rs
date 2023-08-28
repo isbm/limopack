@@ -130,7 +130,7 @@ impl<'a> ModList<'a> {
     /// Add a main module (no dependencies to in). This increases the counter, but doesn't write anything to a disk.
     pub fn add(&mut self, name: String, is_static: bool) {
         let optval = self.modlist.get(&name);
-        if let Some(..) = optval {
+        if let None = optval {
             // new entry
             log::info!("Adding {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
             self.modlist.insert(name, if is_static { -1 } else { 1 });
