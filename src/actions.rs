@@ -28,11 +28,17 @@ pub fn do_tree(debug: &bool, modules: &[String]) {
 /// List dependencies from all specified modules
 /// in a flat sorted format
 pub fn do_list(debug: &bool, modules: &[String]) {
+    let mut out: Vec<String> = Vec::default();
     for ki in get_kernel_infos(debug) {
         let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
         for m in kmtree.merge_specified_deps(modules) {
-            println!("{m}");
+            out.push(m);
         }
+    }
+
+    out.sort();
+    for m in out {
+        println!("{m}");
     }
 }
 

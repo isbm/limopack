@@ -1,10 +1,14 @@
 pub mod kman {
-    use std::collections::{HashMap, HashSet};
     use std::fs::{read_dir, read_to_string};
     use std::path::{Path, PathBuf};
+    use std::{
+        collections::{HashMap, HashSet},
+        process::Command,
+    };
 
     pub static MOD_D: &str = "/lib/modules";
     pub static MOD_DEP_F: &str = "modules.dep";
+    pub static MOD_INFO_EXE: &str = "/usr/sbin/modinfo";
 
     /// Metadata about the kernel and details about it
     #[derive(Debug, Clone)]
@@ -90,6 +94,9 @@ pub mod kman {
 
         /// Find a full path to a module
         /// Example: "sunrpc.ko" will be resolved as "kernel/net/sunrpc/sunrpc.ko"
+        ///
+        /// Some modules are named differently on the disk than in the memory.
+        /// In this case they are tried to be resolved via external "modinfo".
         fn expand_module_name<'a>(&'a self, name: &'a String) -> &String {
             let mut m_name: String;
             if !name.ends_with(".ko") {
@@ -105,10 +112,33 @@ pub mod kman {
                 }
 
                 for fmodname in self.deplist.keys() {
-                    if fmodname.ends_with(&m_name) {
+                    // Eliminate to a minimum 3rd fallback via modinfo by trying replacing underscore with a minus.
+                    // This not always works, because some modules called mixed.
+                    let mm_name = m_name.replace('_', "-");
+                    if fmodname.ends_with(&m_name) || fmodname.ends_with(&mm_name) {
                         return fmodname;
                     }
                 }
+            }
+
+            let out = Command::new(MOD_INFO_EXE).arg(name).output();
+            match out {
+                Ok(_) => match String::from_utf8(out.unwrap().stdout) {
+                    Ok(data) => {
+                        for line in data.lines().map(|el| el.trim().replace(" ", "")) {
+                            if line.starts_with("filename:/") && line.contains("/kernel/") {
+                                let t_modname = format!("kernel/{}", line.split("/kernel/").collect::<Vec<&str>>()[1]);
+                                for fmodname in self.deplist.keys() {
+                                    if *fmodname == t_modname {
+                                        return fmodname;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Err(err) => log::error!("Unable to get info about module \"{name}\": {}", err),
+                },
+                Err(_) => log::error!("Module {name} not found on the disk"),
             }
 
             name
@@ -138,6 +168,7 @@ pub mod kman {
             for kmodname in names {
                 let r_kmodname = self.expand_module_name(kmodname);
                 if !r_kmodname.contains('/') {
+                    log::warn!("Module not found on a disk: {}", r_kmodname);
                     continue;
                 }
 

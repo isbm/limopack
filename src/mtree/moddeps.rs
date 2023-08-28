@@ -1,7 +1,7 @@
 pub mod ktree {
     use crate::mdb::modules::modinfo;
     use crate::mtree::kerman::kman::KernelInfo;
-    use std::collections::HashMap;
+    use std::collections::{BTreeSet, HashMap, HashSet};
 
     pub struct KModuleTree<'kinfo> {
         kernel: &'kinfo KernelInfo<'kinfo>,
@@ -36,20 +36,19 @@ pub mod ktree {
         /// Same as a snapshot `get_loaded()` except it is merges
         /// all the dependencies into one list for an actual operations.
         #[allow(dead_code)]
-        pub fn merge_loaded_deps(&self) -> Vec<String> {
+        pub fn merge_loaded_deps(&self) -> HashSet<String> {
             self.merge_specified_deps(&self.get_loaded_modules())
         }
 
         /// Same as `get_specified` method, except it merges
         /// all the dependencies into one list for an actual operations.
-        pub fn merge_specified_deps(&self, modules: &[String]) -> Vec<String> {
-            let mut deps: Vec<String> = vec![];
+        pub fn merge_specified_deps(&self, modules: &[String]) -> HashSet<String> {
+            let mut deps = HashSet::default();
             for (module, data) in self.get_specified_deps(modules) {
                 deps.extend(data);
-                deps.push(module);
+                deps.insert(module);
             }
 
-            deps.sort();
             deps
         }
     }
