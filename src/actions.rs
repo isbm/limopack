@@ -109,8 +109,7 @@ pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
                 }
 
                 log::info!("Modules on disk: {}, indexed: {}, to remove: {}", disk_mods.len(), idx_mods.len(), diff_mods.len());
-
-                // XXX: actually delete modules here
+                return ml.commit(&diff_mods);
             }
 
             Err(err) => {
