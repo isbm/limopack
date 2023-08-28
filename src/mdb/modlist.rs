@@ -2,7 +2,7 @@ use crate::mtree::kerman::kman;
 use crate::mtree::kerman::kman::KernelInfo;
 use colored::Colorize;
 use exitcode::{self};
-use std::io;
+use std::io::{self, Error};
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
@@ -129,18 +129,19 @@ impl<'a> ModList<'a> {
 
     /// Add a main module (no dependencies to in). This increases the counter, but doesn't write anything to a disk.
     pub fn add(&mut self, name: String, is_static: bool) {
-        let optval = self.modlist.get(&name);
-        if let None = optval {
-            // new entry
-            log::info!("Adding {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
-            self.modlist.insert(name, if is_static { -1 } else { 1 });
-        } else {
-            let refcount = optval.unwrap();
-            if *refcount > 0 {
-                log::info!("Updating {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
-                self.modlist.insert(name, refcount + 1);
-            } else {
-                log::warn!("Skipping static module \"{}\"", name.bright_yellow());
+        match self.modlist.get(&name) {
+            Some(refcount) => {
+                if *refcount > 0 {
+                    log::info!("Updating {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
+                    self.modlist.insert(name, refcount + 1);
+                } else {
+                    log::warn!("Skipping static module \"{}\"", name.bright_yellow());
+                }
+            }
+            None => {
+                // new entry
+                log::info!("Adding {}module \"{}\"", if is_static { "static " } else { "" }, name.bright_yellow());
+                self.modlist.insert(name, if is_static { -1 } else { 1 });
             }
         }
     }
@@ -191,12 +192,6 @@ impl<'a> ModList<'a> {
     /// Apply changes on a disk: remove from the media unused modules
     pub fn commit(&self) -> Result<(), std::io::Error> {
         log::info!("Applying changes");
-        let r = self.write();
-        if r.is_err() {
-            log::error!("Error while saving data about used modules: {}", r.err().unwrap());
-            process::exit(exitcode::IOERR);
-        }
-
-        Ok(())
+        self.write().map_err(|e| Error::new(e.kind(), format!("Error while saving data about used modules: {}", e)))
     }
 }
