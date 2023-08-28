@@ -113,8 +113,8 @@ pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
                 // XXX: actually delete modules here
             }
 
-            Err(_) => {
-                println!("No");
+            Err(err) => {
+                log::error!("Error while getting module list on kernel \"{}\": {}", ki.version, err);
             }
         }
     }
