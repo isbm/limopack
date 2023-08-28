@@ -3,6 +3,7 @@ mod clidef;
 mod logger;
 mod mdb;
 mod mtree;
+mod pakmod;
 
 use clap::Error;
 use std::env;
