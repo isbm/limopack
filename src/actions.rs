@@ -1,8 +1,8 @@
-use std::{io::ErrorKind, ops::Index};
-
 use crate::mdb::modlist;
 use crate::mtree::kerman::kman::get_kernel_infos;
 use crate::mtree::moddeps::ktree::KModuleTree;
+
+use std::io::ErrorKind;
 
 /// Show module dependency tree.
 ///

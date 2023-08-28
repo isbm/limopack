@@ -1,7 +1,7 @@
 pub mod ktree {
     use crate::mdb::modules::modinfo;
     use crate::mtree::kerman::kman::KernelInfo;
-    use std::collections::{BTreeSet, HashMap, HashSet};
+    use std::collections::{HashMap, HashSet};
 
     pub struct KModuleTree<'kinfo> {
         kernel: &'kinfo KernelInfo<'kinfo>,
