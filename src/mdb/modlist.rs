@@ -150,6 +150,14 @@ impl<'a> ModList<'a> {
         self.write()
     }
 
+    /// Get indexed modules
+    pub fn get_modules(&self) -> Vec<String> {
+        let mut out: Vec<String> = self.modlist.keys().map(|s| s.to_owned()).collect();
+        out.sort();
+
+        out
+    }
+
     /// Remove a module from the tree.
     ///
     /// Note, it does not removes a module from the list iff there are no more counters

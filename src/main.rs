@@ -54,11 +54,15 @@ fn main() -> Result<(), Error> {
     } else if params.get_flag("tree") {
         actions::do_tree(&debug, &modules);
     } else if params.get_flag("list") {
-        actions::do_list(&debug, &modules);
+        for modname in actions::do_list(&debug, &modules) {
+            println!("{}", modname);
+        }
     } else if params.get_flag("install") {
         if_err(actions::do_add(&debug, is_static, &modules));
     } else if params.get_flag("remove") {
         if_err(actions::do_remove(&debug, &modules));
+    } else if params.get_flag("apply") {
+        if_err(actions::do_commit(&debug));
     } else {
         cli.print_help().unwrap();
     }

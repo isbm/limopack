@@ -1,4 +1,4 @@
-use std::io::ErrorKind;
+use std::{io::ErrorKind, ops::Index};
 
 use crate::mdb::modlist;
 use crate::mtree::kerman::kman::get_kernel_infos;
@@ -27,7 +27,7 @@ pub fn do_tree(debug: &bool, modules: &[String]) {
 
 /// List dependencies from all specified modules
 /// in a flat sorted format
-pub fn do_list(debug: &bool, modules: &[String]) {
+pub fn do_list(debug: &bool, modules: &[String]) -> Vec<String> {
     let mut out: Vec<String> = Vec::default();
     for ki in get_kernel_infos(debug) {
         let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
@@ -37,9 +37,7 @@ pub fn do_list(debug: &bool, modules: &[String]) {
     }
 
     out.sort();
-    for m in out {
-        println!("{m}");
-    }
+    out
 }
 
 /// Add or remove kernel modules
@@ -97,7 +95,33 @@ pub fn do_remove(debug: &bool, modules: &[String]) -> Result<(), std::io::Error>
 /// Commit changes on the disk. This will permanently remove unused kernel modules
 /// from the disk.
 pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
-    for ki in get_kernel_infos(debug) {}
+    for ki in get_kernel_infos(debug) {
+        match modlist::ModList::new(&ki) {
+            Ok(ml) => {
+                let mut diff_mods: Vec<String> = vec![];
+                let mut idx_mods: Vec<String> = vec![];
+                for mname in ml.get_modules() {
+                    idx_mods.push(ki.expand_module_name(&mname).to_owned());
+                }
+
+                let disk_mods = ki.get_disk_modules();
+
+                for dmod in &disk_mods {
+                    if !idx_mods.contains(&dmod) {
+                        diff_mods.push(dmod.to_owned());
+                    }
+                }
+
+                log::info!("Modules on disk: {}, indexed: {}, to remove: {}", disk_mods.len(), idx_mods.len(), diff_mods.len());
+
+                // XXX: actually delete modules here
+            }
+
+            Err(_) => {
+                println!("No");
+            }
+        }
+    }
     Ok(())
 }
 

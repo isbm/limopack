@@ -97,7 +97,7 @@ pub mod kman {
         ///
         /// Some modules are named differently on the disk than in the memory.
         /// In this case they are tried to be resolved via external "modinfo".
-        fn expand_module_name<'a>(&'a self, name: &'a String) -> &String {
+        pub fn expand_module_name<'a>(&'a self, name: &'a String) -> &String {
             let mut m_name: String;
             if !name.ends_with(".ko") {
                 m_name = format!("{}.ko", name); // "sunrpc" -> "sunrpc.ko"
@@ -184,6 +184,22 @@ pub mod kman {
             }
 
             mod_tree
+        }
+
+        /// Get all found modules
+        pub fn get_disk_modules(&self) -> Vec<String> {
+            let mut mods: Vec<String> = vec![];
+            let mut buff: HashSet<String> = HashSet::default();
+
+            for (modname, moddeps) in &self.deplist {
+                buff.insert(modname.to_owned());
+                buff.extend(moddeps.to_owned());
+            }
+
+            mods = buff.iter().map(|x| x.to_string()).collect();
+            mods.sort();
+
+            mods
         }
     }
 
