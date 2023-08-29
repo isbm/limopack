@@ -1,6 +1,6 @@
-use crate::mdb::modlist;
-use crate::mtree::kerman::kman::get_kernel_infos;
 use crate::mtree::moddeps::ktree::KModuleTree;
+use crate::{mdb::modlist, pakmod};
+use crate::{mtree::kerman::kman::get_kernel_infos, pakmod::rmpak::PackMod};
 
 use std::io::ErrorKind;
 
