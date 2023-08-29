@@ -6,7 +6,7 @@ mod mtree;
 mod pakmod;
 
 use clap::Error;
-use std::env;
+use std::{env, process};
 
 static VERSION: &str = "0.1";
 static LOGGER: logger::STDOUTLogger = logger::STDOUTLogger;
@@ -19,6 +19,7 @@ fn init(debug: &bool) -> Result<(), log::SetLoggerError> {
 fn if_err(res: Result<(), std::io::Error>) {
     if res.is_err() {
         log::error!("{}", res.err().unwrap().to_string());
+        process::exit(exitcode::OSERR);
     }
 }
 

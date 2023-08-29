@@ -55,15 +55,34 @@ impl DpkgMod {
 }
 
 impl PackMod for DpkgMod {
-    fn remove_package(&self, pn: String) -> Result<(), Error> {
-        log::info!("Looking for \"{}\" package in dpkg database", pn.bright_yellow());
+    /// Remove package from the index. This still keeps only the state of the modpack,
+    /// but does not writes anything to the disk.
+    fn remove_package(&mut self, pn: String) -> Result<(), Error> {
+        let mut buff: Vec<String> = vec![];
+        log::info!("Looking for \"{}\" package...", pn.bright_yellow());
+        let mut found = false;
         for p in &self.packages {
-            if self.is_package(pn.to_owned(), p.to_owned()) {
-                log::info!("Altering dpkg database for package \"{}\"", pn.bright_yellow());
-                return Ok(());
+            if !self.is_package(pn.to_owned(), p.to_owned()) {
+                buff.push(p.to_owned());
+            } else {
+                log::info!("Altering package manager database for \"{}\"", pn.bright_yellow());
+                found = true;
             }
         }
 
-        Err(Error::new(ErrorKind::NotFound, format!("Package \"{}\" was not found in the database", pn.bright_yellow())))
+        self.packages = Vec::new();
+        self.packages.extend(buff);
+
+        if found {
+            Ok(())
+        } else {
+            Err(Error::new(ErrorKind::NotFound, format!("Package \"{}\" was not found in the database", pn.bright_yellow())))
+        }
+    }
+
+    /// Save the current state to the disk.
+    fn save(&self) -> Result<(), Error> {
+        log::info!("Save changes to the dpkg database");
+        Ok(())
     }
 }
