@@ -109,7 +109,12 @@ pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
                 }
 
                 log::info!("Modules on disk: {}, indexed: {}, to remove: {}", disk_mods.len(), idx_mods.len(), diff_mods.len());
-                return ml.commit(&diff_mods);
+                match ml.commit(&diff_mods) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        return Err(std::io::Error::new(err.kind(), format!("Unable to commit changes to the disk: {}", err)))
+                    }
+                }
             }
 
             Err(err) => {
