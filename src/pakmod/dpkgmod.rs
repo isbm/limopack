@@ -49,7 +49,7 @@ impl DpkgMod {
 
     /// Returns true if a current chunk corresponds to a given package name
     fn is_package(&self, name: String, data: String) -> bool {
-        let dls: Vec<String> = data.split("\n").map(|x| x.to_string()).collect();
+        let dls: Vec<String> = data.split('\n').map(|x| x.to_string()).collect();
         name == self.chop_field(dls[0].to_owned())
     }
 }
