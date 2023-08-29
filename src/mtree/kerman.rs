@@ -97,7 +97,7 @@ pub mod kman {
         ///
         /// Some modules are named differently on the disk than in the memory.
         /// In this case they are tried to be resolved via external "modinfo".
-        pub fn expand_module_name<'a>(&'a self, name: &'a String) -> &String {
+        fn expand_module_name<'a>(&'a self, name: &'a String) -> &String {
             let mut m_name: String;
             if !name.ends_with(".ko") {
                 m_name = format!("{}.ko", name); // "sunrpc" -> "sunrpc.ko"
@@ -184,6 +184,18 @@ pub mod kman {
             }
 
             mod_tree
+        }
+
+        /// Same as `get_deps_for`, except returns flattened list
+        /// for all modules with their dependencies.
+        pub fn get_deps_for_flatten(&self, names: &[String]) -> Vec<String> {
+            let mut buff: HashSet<String> = HashSet::default();
+            for (mname, mdeps) in &self.get_deps_for(names) {
+                buff.insert(mname.to_owned());
+                buff.extend(mdeps.to_owned());
+            }
+
+            buff.iter().map(|x| x.to_owned()).collect()
         }
 
         /// Get all found modules
