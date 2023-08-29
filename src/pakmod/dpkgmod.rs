@@ -33,11 +33,8 @@ impl DpkgMod {
 
     /// Load package status
     fn load(&mut self) -> Self {
-        match fs::read_to_string("/var/lib/dpkg/status") {
-            Ok(data) => {
-                let _ = &self.packages.extend(data.split("\n\n").map(|el| el.to_string()).collect::<Vec<String>>());
-            }
-            Err(_) => (),
+        if let Ok(data) = fs::read_to_string("/var/lib/dpkg/status") {
+            let _ = &self.packages.extend(data.split("\n\n").map(|el| el.to_string()).collect::<Vec<String>>());
         }
 
         self.to_owned()
