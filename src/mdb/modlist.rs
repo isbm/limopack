@@ -198,8 +198,7 @@ impl<'a> ModList<'a> {
 
     /// Apply changes on a disk: remove from the media unused modules
     pub fn commit(&self, modules: &[String]) -> Result<(), std::io::Error> {
-        log::info!("Applying changes");
-        //self.write().map_err(|e| Error::new(e.kind(), format!("Error while saving data about used modules: {}", e)))
+        log::info!("Applying changes to {} modules", modules.len());
         Ok(())
     }
 }

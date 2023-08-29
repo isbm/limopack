@@ -125,6 +125,10 @@ pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
 
 /// Unregister specified package from the package manager database.
 /// Yuck!...
-pub fn do_unregister_pkg(debug: &bool, pkgname: String) -> Result<(), std::io::Error> {
-    Ok(())
+pub fn do_unregister_pkg(debug: &bool, pkgname: &String) -> Result<(), std::io::Error> {
+    if *debug {
+        log::debug!("Unregistering {} package", pkgname);
+    }
+
+    pakmod::dpkgmod::DpkgMod::new().remove_package(pkgname.to_string())
 }

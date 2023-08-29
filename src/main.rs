@@ -63,7 +63,13 @@ fn main() -> Result<(), Error> {
     } else if params.get_flag("remove") {
         if_err(actions::do_remove(&debug, &modules));
     } else if params.get_flag("apply") {
-        if_err(actions::do_commit(&debug));
+        match params.get_one::<String>("pkname") {
+            Some(pkname) => {
+                if_err(actions::do_commit(&debug));
+                if_err(actions::do_unregister_pkg(&debug, pkname))
+            }
+            None => todo!(),
+        }
     } else {
         cli.print_help().unwrap();
     }

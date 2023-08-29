@@ -72,7 +72,8 @@ pub fn cli(version: &'static str) -> Command {
             Arg::new("apply")
                 .short('a')
                 .long("apply")
-                .conflicts_with_all(["use", "static", "tree", "list", "pkname", "install", "remove"])
+                .conflicts_with_all(["use", "static", "tree", "list", "install", "remove"])
+                .requires("pkname")
                 .action(ArgAction::SetTrue)
                 .help(format!(
                     "{}{}",
