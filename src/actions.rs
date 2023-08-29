@@ -113,7 +113,10 @@ pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
             }
 
             Err(err) => {
-                log::error!("Error while getting module list on kernel \"{}\": {}", ki.version, err);
+                return Err(std::io::Error::new(
+                    err.kind(),
+                    format!("Error while getting module list on kernel \"{}\": {}", ki.version, err),
+                ));
             }
         }
     }
