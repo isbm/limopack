@@ -25,13 +25,9 @@ impl DpkgMod {
     /// Remove field from a string.
     /// Fields are first keywords, following ":" colon.
     fn chop_field(&self, line: String) -> String {
-        match line.split_once(":") {
-            Some(data) => {
-                return data.1.trim().to_string();
-            }
-            None => {
-                return String::from("");
-            }
+        match line.split_once(':') {
+            Some(data) => data.1.trim().to_string(),
+            None => String::from(""),
         }
     }
 
