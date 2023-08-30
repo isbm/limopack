@@ -79,7 +79,14 @@ impl PackMod for DpkgMod {
 
     /// Save the current state to the disk.
     fn save(&self) -> Result<(), Error> {
+        // TODO: Add backups, locks and atomic updates, because /var/lib/* is a danger zone.
         log::info!("Save changes to the dpkg database");
+        if let Ok(mut fptr) = OpenOptions::new().create(true).write(true).truncate(true).open("/tmp/dpkg.status") {
+            let p_idx = self.packages.len() - 1;
+            for (idx, pinfo) in self.packages.iter().enumerate() {
+                fptr.write_all(format!("{}{}", pinfo, if idx < p_idx { "\n\n" } else { "" }).as_bytes())?;
+            }
+        }
         Ok(())
     }
 }
