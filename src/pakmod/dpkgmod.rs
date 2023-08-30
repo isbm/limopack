@@ -1,6 +1,6 @@
 use std::{
-    fs,
-    io::{Error, ErrorKind},
+    fs::{self, OpenOptions},
+    io::{Error, ErrorKind, Write},
 };
 
 use colored::Colorize;
