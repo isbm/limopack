@@ -68,7 +68,7 @@ pub mod kman {
                         let mut deplist: Vec<String> = vec![];
 
                         if !moddeps.is_empty() {
-                            deplist = moddeps.split(' ').into_iter().map(|x| x.to_owned()).collect();
+                            deplist = moddeps.split(' ').map(|x| x.to_owned()).collect();
                             if *self.debug {
                                 log::debug!("Found {} dependencies for {}", deplist.len(), modpath);
                             }
