@@ -67,11 +67,14 @@ impl PackMod for DpkgMod {
         self.packages = Vec::new();
         self.packages.extend(buff);
 
-        if found {
-            Ok(())
-        } else {
-            Err(Error::new(ErrorKind::NotFound, format!("Package \"{}\" was not found in the database", pn.bright_yellow())))
+        if !found {
+            return Err(Error::new(
+                ErrorKind::NotFound,
+                format!("Package \"{}\" was not found in the database", pn.bright_yellow()),
+            ));
         }
+
+        Ok(())
     }
 
     /// Save the current state to the disk.
