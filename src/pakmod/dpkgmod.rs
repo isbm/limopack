@@ -15,11 +15,12 @@ use super::rmpak::PackMod;
 #[derive(Clone)]
 pub struct DpkgMod {
     packages: Vec<String>,
+    status_path: String,
 }
 
 impl DpkgMod {
     pub fn new() -> Self {
-        DpkgMod { packages: vec![] }.load()
+        DpkgMod { packages: vec![], status_path: "/var/lib/dpkg/status".to_string() }.load()
     }
 
     /// Remove field from a string.
@@ -33,7 +34,7 @@ impl DpkgMod {
 
     /// Load package status
     fn load(&mut self) -> Self {
-        if let Ok(data) = fs::read_to_string("/var/lib/dpkg/status") {
+        if let Ok(data) = fs::read_to_string(&self.status_path) {
             let _ = &self.packages.extend(data.split("\n\n").map(|el| el.to_string()).collect::<Vec<String>>());
         }
 
