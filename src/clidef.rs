@@ -12,7 +12,8 @@ pub fn cli(version: &'static str) -> Command {
 
     Command::new("limopack")
         .version(version)
-        .about("[Li]nux [Mo]dule [Pack]age Helper")
+        .about(format!("{}{} {}{} {}{}", "Li".bold().underline(), "nux", "Mo".bold().underline(), "dule", "Pack".bold().underline(),
+        "age Helper - is a packaging utility to manage unused kernel modules on mainline kernels"))
         // Config
         .arg(
             Arg::new("use")
@@ -71,7 +72,8 @@ pub fn cli(version: &'static str) -> Command {
             Arg::new("apply")
                 .short('a')
                 .long("apply")
-                .conflicts_with_all(["use", "static", "tree", "list", "pkname", "install", "remove"])
+                .conflicts_with_all(["use", "static", "tree", "list", "install", "remove"])
+                .requires("pkname")
                 .action(ArgAction::SetTrue)
                 .help(format!(
                     "{}{}",

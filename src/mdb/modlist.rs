@@ -1,11 +1,17 @@
 use crate::mtree::kerman::kman;
 use crate::mtree::kerman::kman::KernelInfo;
 use colored::Colorize;
-use exitcode::{self};
-use std::io::{self, Error};
-use std::io::{BufRead, Write};
 use std::path::PathBuf;
-use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path, process};
+use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path};
+use std::{
+    fs,
+    io::{self},
+};
+use std::{
+    io::{BufRead, Write},
+    vec,
+};
+use walkdir::WalkDir;
 
 /// Module tracker
 /// Used modules are stored a plain-text file in /lib/modules/<version>/modules.active
@@ -48,12 +54,13 @@ pub struct ModList<'a> {
     //   - any positive value is a counter for the references
     modlist: HashMap<String, i16>,
     kinfo: &'a KernelInfo<'a>,
+    debug: &'a bool,
 }
 
 impl<'a> ModList<'a> {
     /// Constructor
-    pub fn new(kinfo: &'a KernelInfo) -> Result<Self, std::io::Error> {
-        let mut modlist = ModList { modlist: HashMap::default(), kinfo };
+    pub fn new(kinfo: &'a KernelInfo, debug: &'a bool) -> Result<Self, std::io::Error> {
+        let mut modlist = ModList { modlist: HashMap::default(), kinfo, debug };
 
         let loaded = modlist.load();
         if loaded.is_err() {
@@ -151,6 +158,14 @@ impl<'a> ModList<'a> {
         self.write()
     }
 
+    /// Get indexed modules
+    pub fn get_modules(&self) -> Vec<String> {
+        let mut out: Vec<String> = self.modlist.keys().map(|s| s.to_owned()).collect();
+        out.sort();
+
+        out
+    }
+
     /// Remove a module from the tree.
     ///
     /// Note, it does not removes a module from the list iff there are no more counters
@@ -190,8 +205,76 @@ impl<'a> ModList<'a> {
     }
 
     /// Apply changes on a disk: remove from the media unused modules
-    pub fn commit(&self) -> Result<(), std::io::Error> {
-        log::info!("Applying changes");
-        self.write().map_err(|e| Error::new(e.kind(), format!("Error while saving data about used modules: {}", e)))
+    pub fn commit(&self, modules: &[String]) -> Result<(), std::io::Error> {
+        log::info!("Applying changes to {} modules", modules.len());
+        let mut skipped = 0;
+        let mut removed = 0;
+
+        for modpath in modules {
+            let modpath = &self.kinfo.get_kernel_path().join(modpath);
+            let s_modpath = modpath.to_owned().into_os_string().into_string().unwrap();
+            if *self.debug {
+                log::debug!("Removing kernel module: {}", s_modpath);
+            }
+
+            if modpath.exists() {
+                fs::remove_file(modpath)?;
+                removed += 1;
+            } else {
+                if *self.debug {
+                    log::debug!("Skipping kernel module: {}", s_modpath);
+                }
+                skipped += 1;
+            }
+        }
+
+        log::info!(
+            "Removed: {}, skipped (do not exist on the media): {}",
+            removed.to_string().bright_yellow(),
+            skipped.to_string().bright_yellow()
+        );
+        Ok(())
+    }
+
+    /// Removes all empty sub/directories from the kernel's relative directory.
+    pub fn vacuum_dirs(&self) -> Result<(), std::io::Error> {
+        log::info!("Vacuuming modules space");
+        let mut removed = 0;
+        let mut paths: Vec<_> = vec![];
+
+        // Get directories, but do not remove them just yet
+        for e in WalkDir::new(self.kinfo.get_kernel_path().join("kernel")).into_iter().flatten() {
+            if e.file_type().is_dir() {
+                paths.push(e.path().to_owned());
+            }
+        }
+
+        // Erase empty dirs, if any (if dir is not empty it won't be deleted)
+        // This is a pretty crude way, as it cycles until no more directories deleted
+        // The fs::remove_dir() will fail to remove a non-empty directory,
+        // efficiently removing only empty ones. This way several walks will eventually
+        // remove all subdirs with empty subdirs in them. Maybe in a future
+        // could be a better algorithm, but this just works fast enough and does the job. :-)
+        let mut cycle_removed = 0;
+        loop {
+            for p in &paths {
+                if let Ok(()) = fs::remove_dir(p) {
+                    cycle_removed += 1;
+                    removed += 1;
+                }
+            }
+
+            if cycle_removed == 0 {
+                break;
+            } else {
+                cycle_removed = 0;
+            }
+        }
+
+        if removed > 0 {
+            log::info!("Removed {} empty directories", removed);
+        }
+
+        Ok(())
     }
 }
