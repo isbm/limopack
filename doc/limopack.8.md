@@ -8,17 +8,7 @@ NAME
 SYNOPSIS
 ========
 
-Usage of the limopack as follows:
-
-    USAGE:
-        limopack [OPTIONS]
-
-    OPTIONS:
-        -d, --debug        Set to debug mode
-        -e, --tree         Display module dependency tree
-        -h, --help         Print help information
-        -u, --use <use>    Specify comma-separated list of kernel modules to be used
-        -v, --version      Get current version
+Usage of the limopack as follows: `limopack [OPTIONS]`
 
 DESCRIPTION
 ===========
@@ -54,35 +44,56 @@ When a new update comes, modules package is then brought back for update.
 OPTIONS
 -------
 
--d, --debug
+-u, --use <use>
 
-:   Set to debug mode
+: Specify comma-separated list of kernel modules to be processed. For example
+: you can specify **--use=module1,module2,module3** etc.
+
+-s, --static
+
+: Use specified modules as static (i.e. stays permanently)
 
 -e, --tree
 
-:   Display module dependency tree
+: Display module dependency tree.
 
--h, --help
+-l, --list
 
-:   Print help information
+: Display in a sorted flat list format all modules that will
+: be used. This includes all dependencies and already marked
+: and existing modules.
+
+-p, --pkname <pkname>
+
+: Specify a package name, which needs to be un-registered
+: from the package manager database in order to be visible to the system as
+: non-existing, so the system can bring it again for an update or installation.
 
 -i, --install
 
-:   Add to the list of used modules, those are specified by `--use` option.
+: Mark specified modules as needed for the system.
 
--s, --shrink
+-r, --remove
 
-:   Remove unused kernel modules (vacuum) from the media.
+: Remove specified modules as no longer needed for the system,
+: so they can be purged from the disk. This operation only marks
+: the modules to be removed, but does not actually removes them.
 
--u, --use <use>
+-a, --apply
 
-:   Specify comma-separated list of kernel module to be used. Kernel
-    module can have a partial path to it (without `/lib/modules/<version>/kernel`
-    as a prefix), and also can have only names or with `.ko` extension.
+: Apply the changes, vacuuming all unneded/unregisterd (non-marked)
+: kernel modules, those are still exist on a disk, but always unused.
+: *NOTE: this option can be only used alone, as it commits the changes*
 
+-d, --debug
+
+: Set debug mode for more verbose output.
 -v, --version
 
-:   Get current version
+: Get current version.
+-h, --help
+
+: Print help
 
 FILES
 =====
