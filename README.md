@@ -41,8 +41,6 @@ To build `limopack` simply checkout this repo, and run inside it:
 
 
 ## Use Cases <a name="uc" />
-
-## Use Case
 Create a very tiny Linux kernel setup from the mainline Linux kernel,
 where only necessary modules are present on the media, but achieveing
 this without intervening into an existing kernel maintenance framework
