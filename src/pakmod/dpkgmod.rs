@@ -80,18 +80,41 @@ impl PackMod for DpkgMod<'_> {
 
     /// Save the current state to the disk.
     fn save(&self) -> Result<(), Error> {
-        // TODO: Add backups, locks and atomic updates, because /var/lib/* is a danger zone.
+        log::info!("Save changes to the dpkg database");
         if *self.debug {
-            log::debug!("Locking {}", self.status_path.to_owned().bright_yellow());
+            log::debug!("Backing up \"{}\" before modification", self.status_path.to_owned().bright_yellow());
         }
 
-        log::info!("Save changes to the dpkg database");
+        let status_backup_path = format!("{}.limopack.bkp", &self.status_path);
+        fs::copy(&self.status_path, &status_backup_path)?;
+
         if let Ok(mut fptr) = OpenOptions::new().create(true).write(true).truncate(true).open(&self.status_path) {
             let p_idx = self.packages.len() - 1;
             for (idx, pinfo) in self.packages.iter().enumerate() {
-                fptr.write_all(format!("{}{}", pinfo, if idx < p_idx { "\n\n" } else { "" }).as_bytes())?;
+                match fptr.write_all(format!("{}{}", pinfo, if idx < p_idx { "\n\n" } else { "" }).as_bytes()) {
+                    Ok(_) => {}
+                    Err(err) => {
+                        log::error!(
+                            "Unable to write \"{}\": \"{}\"",
+                            &self.status_path.bright_yellow(),
+                            err.to_string().bright_red()
+                        );
+                        // Badaboom. We probably screwed it all up and now need to restore the backup. Hopefully.
+                        if *self.debug {
+                            log::debug!("Restoring \"{}\"", self.status_path.to_owned().bright_yellow());
+                        }
+                        fs::copy(&status_backup_path, &self.status_path)?;
+
+                        if *self.debug {
+                            log::debug!("Removing backup at \"{}\"", &status_backup_path.to_owned().bright_yellow());
+                        }
+
+                        fs::remove_file(&status_backup_path)?;
+                    }
+                }
             }
         }
+
         Ok(())
     }
 }
