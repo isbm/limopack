@@ -52,6 +52,11 @@ pub mod kman {
             self
         }
 
+        /// Return current kernel info root path.
+        pub fn get_kernel_path(&self) -> PathBuf {
+            PathBuf::from(MOD_D).join(&self.version)
+        }
+
         /// Load module dependencies
         /// Skip if there is no /lib/modules/<version/kernel directory
         fn load_deps(&mut self) {
@@ -59,7 +64,7 @@ pub mod kman {
                 return;
             }
 
-            let modpath = PathBuf::from(MOD_D).join(&self.version).join("kernel");
+            let modpath = self.get_kernel_path().join("kernel");
             self.is_valid = Path::new(modpath.to_str().unwrap()).is_dir();
             if self.is_valid {
                 for line in read_to_string(self.dep_path.as_os_str()).unwrap().lines() {
