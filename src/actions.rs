@@ -44,7 +44,7 @@ pub fn do_list(debug: &bool, modules: &[String]) -> Vec<String> {
 fn _add_remove(debug: &bool, add: bool, is_static: bool, modules: &mut Vec<String>) -> Result<(), std::io::Error> {
     for ki in get_kernel_infos(debug) {
         let kmtree: KModuleTree<'_> = KModuleTree::new(&ki);
-        let rml: Result<modlist::ModList<'_>, std::io::Error> = modlist::ModList::new(&ki, &debug);
+        let rml: Result<modlist::ModList<'_>, std::io::Error> = modlist::ModList::new(&ki, debug);
 
         if rml.is_err() {
             return Err(rml.err().unwrap());
@@ -96,7 +96,7 @@ pub fn do_remove(debug: &bool, modules: &[String]) -> Result<(), std::io::Error>
 /// from the disk.
 pub fn do_commit(debug: &bool) -> Result<(), std::io::Error> {
     for ki in get_kernel_infos(debug) {
-        match modlist::ModList::new(&ki, &debug) {
+        match modlist::ModList::new(&ki, debug) {
             Ok(ml) => {
                 let mut diff_mods: Vec<String> = vec![];
                 let idx_mods = ki.get_deps_for_flatten(&ml.get_modules());
