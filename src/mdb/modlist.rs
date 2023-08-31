@@ -203,6 +203,32 @@ impl<'a> ModList<'a> {
     /// Apply changes on a disk: remove from the media unused modules
     pub fn commit(&self, modules: &[String]) -> Result<(), std::io::Error> {
         log::info!("Applying changes to {} modules", modules.len());
+        let mut skipped = 0;
+        let mut removed = 0;
+
+        for modpath in modules {
+            let modpath = &self.kinfo.get_kernel_path().join(modpath);
+            let s_modpath = modpath.to_owned().into_os_string().into_string().unwrap();
+            if *self.debug {
+                log::debug!("Removing kernel module: {}", s_modpath);
+            }
+
+            if modpath.exists() {
+                fs::remove_file(modpath)?;
+                removed += 1;
+            } else {
+                if *self.debug {
+                    log::debug!("Skipping kernel module: {}", s_modpath);
+                }
+                skipped += 1;
+            }
+        }
+
+        log::info!(
+            "Removed: {}, skipped (do not exist on the media): {}",
+            removed.to_string().bright_yellow(),
+            skipped.to_string().bright_yellow()
+        );
         Ok(())
     }
 }
