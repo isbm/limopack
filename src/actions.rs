@@ -135,7 +135,7 @@ pub fn do_unregister_pkg(debug: &bool, pkgname: &String) -> Result<(), std::io::
         log::debug!("Unregistering {} package", pkgname);
     }
 
-    let mut pmod = pakmod::dpkgmod::DpkgMod::new();
+    let mut pmod = pakmod::dpkgmod::DpkgMod::new(debug);
     match pmod.remove_package(pkgname.to_string()) {
         Ok(_) => pmod.save(),
         Err(err) => Err(err),

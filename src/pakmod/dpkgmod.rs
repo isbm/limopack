@@ -13,14 +13,15 @@ use colored::Colorize;
 use super::rmpak::PackMod;
 
 #[derive(Clone)]
-pub struct DpkgMod {
+pub struct DpkgMod<'a> {
     packages: Vec<String>,
     status_path: String,
+    debug: &'a bool,
 }
 
-impl DpkgMod {
-    pub fn new() -> Self {
-        DpkgMod { packages: vec![], status_path: "/var/lib/dpkg/status".to_string() }.load()
+impl<'a> DpkgMod<'a> {
+    pub fn new(debug: &'a bool) -> Self {
+        DpkgMod { packages: vec![], status_path: "/var/lib/dpkg/status".to_string(), debug }.load()
     }
 
     /// Remove field from a string.
@@ -48,7 +49,7 @@ impl DpkgMod {
     }
 }
 
-impl PackMod for DpkgMod {
+impl PackMod for DpkgMod<'_> {
     /// Remove package from the index. This still keeps only the state of the modpack,
     /// but does not writes anything to the disk.
     fn remove_package(&mut self, pn: String) -> Result<(), Error> {
@@ -80,8 +81,12 @@ impl PackMod for DpkgMod {
     /// Save the current state to the disk.
     fn save(&self) -> Result<(), Error> {
         // TODO: Add backups, locks and atomic updates, because /var/lib/* is a danger zone.
+        if *self.debug {
+            log::debug!("Locking {}", self.status_path.to_owned().bright_yellow());
+        }
+
         log::info!("Save changes to the dpkg database");
-        if let Ok(mut fptr) = OpenOptions::new().create(true).write(true).truncate(true).open("/tmp/dpkg.status") {
+        if let Ok(mut fptr) = OpenOptions::new().create(true).write(true).truncate(true).open(&self.status_path) {
             let p_idx = self.packages.len() - 1;
             for (idx, pinfo) in self.packages.iter().enumerate() {
                 fptr.write_all(format!("{}{}", pinfo, if idx < p_idx { "\n\n" } else { "" }).as_bytes())?;
