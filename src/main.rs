@@ -4,6 +4,7 @@ mod logger;
 mod mdb;
 mod mtree;
 mod pakmod;
+mod sysutils;
 
 use clap::Error;
 use std::{env, process};
@@ -39,6 +40,11 @@ fn main() -> Result<(), Error> {
     let debug: bool = params.get_flag("debug");
 
     init(&debug).unwrap();
+
+    // Check if user has required access
+    if params.get_flag("install") || params.get_flag("remove") || params.get_flag("apply") {
+        if_err(sysutils::user_is_root());
+    }
 
     let modlist = params.get_one::<String>("use");
     let modules: Vec<String> = if modlist.is_some() {
