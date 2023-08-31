@@ -1,10 +1,13 @@
 use crate::mtree::kerman::kman;
 use crate::mtree::kerman::kman::KernelInfo;
 use colored::Colorize;
-use std::io::{self};
 use std::io::{BufRead, Write};
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::ErrorKind, path::Path};
+use std::{
+    fs,
+    io::{self},
+};
 
 /// Module tracker
 /// Used modules are stored a plain-text file in /lib/modules/<version>/modules.active
