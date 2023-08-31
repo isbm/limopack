@@ -243,11 +243,9 @@ impl<'a> ModList<'a> {
         let mut paths: Vec<_> = vec![];
 
         // Get directories, but do not remove them just yet
-        for r in WalkDir::new(self.kinfo.get_kernel_path().join("kernel")) {
-            if let Ok(e) = r {
-                if e.file_type().is_dir() {
-                    paths.push(e.path().to_owned());
-                }
+        for e in WalkDir::new(self.kinfo.get_kernel_path().join("kernel")).into_iter().flatten() {
+            if e.file_type().is_dir() {
+                paths.push(e.path().to_owned());
             }
         }
 
