@@ -7,7 +7,7 @@ mod pakmod;
 mod sysutils;
 
 use clap::Error;
-use std::{env, process};
+use std::{env, io::ErrorKind, process};
 
 static VERSION: &str = "0.1";
 static LOGGER: logger::STDOUTLogger = logger::STDOUTLogger;
