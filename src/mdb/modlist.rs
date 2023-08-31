@@ -47,12 +47,13 @@ pub struct ModList<'a> {
     //   - any positive value is a counter for the references
     modlist: HashMap<String, i16>,
     kinfo: &'a KernelInfo<'a>,
+    debug: &'a bool,
 }
 
 impl<'a> ModList<'a> {
     /// Constructor
-    pub fn new(kinfo: &'a KernelInfo) -> Result<Self, std::io::Error> {
-        let mut modlist = ModList { modlist: HashMap::default(), kinfo };
+    pub fn new(kinfo: &'a KernelInfo, debug: &'a bool) -> Result<Self, std::io::Error> {
+        let mut modlist = ModList { modlist: HashMap::default(), kinfo, debug };
 
         let loaded = modlist.load();
         if loaded.is_err() {
