@@ -72,8 +72,11 @@ fn main() -> Result<(), Error> {
     } else if params.get_flag("apply") {
         match params.get_one::<String>("pkname") {
             Some(pkname) => {
-                if_err(actions::do_commit(&debug));
-                if_err(actions::do_unregister_pkg(&debug, pkname))
+                if pkname.is_empty() {
+                    if_err(Err(std::io::Error::new(ErrorKind::InvalidInput, "Package name is not specified")))
+                }
+                if_err(actions::do_unregister_pkg(&debug, pkname));
+                if_err(actions::do_commit(&debug))
             }
             None => todo!(),
         }
