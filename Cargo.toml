@@ -13,6 +13,7 @@ clap_complete = "4.3.2"
 colored = "2.0.4"
 exitcode = "1.1.2"
 log = "0.4.20"
+walkdir = "2.3.3"
 
 
 [profile.release]
