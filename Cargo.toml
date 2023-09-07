@@ -8,14 +8,17 @@ authors = ["Bo Maryniuk <bo@maryniuk.net>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anstream = "0.3.2"
+anstyle-wincon = "1.0.2"
 chrono = "0.4.26"
 clap = { version = "4.3.24", features = ["derive", "color", "unstable-styles"] }
-clap_complete = "4.3.2"
+clap_builder = "4.3.24"
+clap_derive = "4.3.12"
+clap_lex = "0.5.0"
 colored = "2.0.4"
 exitcode = "1.1.2"
 log = "0.4.20"
 walkdir = "2.3.3"
-
 
 [profile.release]
 strip = true
